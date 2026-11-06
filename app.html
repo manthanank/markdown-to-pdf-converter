@@ -84,6 +84,13 @@
     .theme-minimal p { margin-bottom: 0.8rem; }
 
     /* Base Markdown Element Styles */
+    .pdf-content {
+      width: 100%;
+      max-width: 100%;
+      box-sizing: border-box;
+      overflow-wrap: break-word;
+      word-break: break-word;
+    }
     .pdf-content ul { list-style-type: disc; margin-left: 1.5rem; margin-bottom: 0.8rem; }
     .pdf-content ol { list-style-type: decimal; margin-left: 1.5rem; margin-bottom: 0.8rem; }
     .pdf-content li { margin-bottom: 0.25rem; }
@@ -130,6 +137,8 @@
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
       page-break-inside: avoid;
       break-inside: avoid;
+      max-width: 100%;
+      box-sizing: border-box;
     }
     .pdf-content .code-block-header {
       display: flex;
@@ -153,6 +162,11 @@
       margin: 0 !important;
       border-radius: 0 !important;
       overflow-x: auto;
+      max-width: 100%;
+      box-sizing: border-box;
+      white-space: pre-wrap !important;
+      word-break: break-word !important;
+      overflow-wrap: break-word !important;
       font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
       font-size: 0.865rem;
       line-height: 1.55;
@@ -209,6 +223,7 @@
       width: 100%;
       max-width: 210mm;
       box-sizing: border-box;
+      overflow: hidden;
     }
 
     @media (max-width: 640px) {
@@ -220,20 +235,29 @@
       }
     }
 
-    /* Screen styles for print-page-table wrapper */
+    /* Screen styles for print-page-table wrapper: pure block layout on screen */
     .print-page-table {
-      width: 100%;
+      width: 100% !important;
+      max-width: 100% !important;
+      display: block !important;
       border-collapse: collapse;
       border: none;
+      box-sizing: border-box;
     }
     .print-page-header,
     .print-page-footer {
-      display: none;
+      display: none !important;
     }
+    .print-page-table tbody,
+    .print-page-table tr,
     .print-body-cell {
-      padding: 0;
-      border: none;
-      vertical-align: top;
+      display: block !important;
+      width: 100% !important;
+      max-width: 100% !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      border: none !important;
+      box-sizing: border-box !important;
     }
 
     /* Browser Print Optimization */
@@ -295,12 +319,15 @@
         padding: 0 !important;
         box-shadow: none !important;
         border: none !important;
+        overflow: visible !important;
       }
 
       /* Multi-page repeated page margins via table-header-group & table-footer-group */
       .print-page-table {
         display: table !important;
         width: 100% !important;
+        max-width: 100% !important;
+        table-layout: fixed !important;
         border-collapse: collapse !important;
         border: none !important;
       }
@@ -311,6 +338,14 @@
 
       .print-page-footer {
         display: table-footer-group !important;
+      }
+
+      .print-page-table tbody {
+        display: table-row-group !important;
+      }
+
+      .print-page-table tr {
+        display: table-row !important;
       }
 
       .print-header-cell {
@@ -328,12 +363,18 @@
       }
 
       .print-body-cell {
+        display: table-cell !important;
+        width: 100% !important;
+        max-width: 100% !important;
         padding-left: 20mm !important;
         padding-right: 20mm !important;
         padding-top: 0 !important;
         padding-bottom: 0 !important;
         border: none !important;
         vertical-align: top !important;
+        box-sizing: border-box !important;
+        word-break: break-word !important;
+        overflow-wrap: break-word !important;
       }
 
       .page-break {
@@ -1386,6 +1427,27 @@
           #preview-render-area {
             padding: 0 !important;
             margin: 0 !important;
+            overflow: visible !important;
+          }
+          .print-page-table {
+            display: table !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            table-layout: fixed !important;
+            border-collapse: collapse !important;
+            border: none !important;
+          }
+          .print-page-header {
+            display: table-header-group !important;
+          }
+          .print-page-footer {
+            display: table-footer-group !important;
+          }
+          .print-page-table tbody {
+            display: table-row-group !important;
+          }
+          .print-page-table tr {
+            display: table-row !important;
           }
           .print-header-cell {
             height: ${mVal}mm !important;
@@ -1394,8 +1456,16 @@
             height: ${mVal}mm !important;
           }
           .print-body-cell {
+            display: table-cell !important;
+            width: 100% !important;
+            max-width: 100% !important;
             padding-left: ${mVal}mm !important;
             padding-right: ${mVal}mm !important;
+            padding-top: 0 !important;
+            padding-bottom: 0 !important;
+            box-sizing: border-box !important;
+            word-break: break-word !important;
+            overflow-wrap: break-word !important;
           }
         }
       `;
