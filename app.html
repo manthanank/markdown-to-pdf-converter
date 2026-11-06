@@ -218,23 +218,83 @@
 
     /* Browser Print Optimization */
     @media print {
-      body * {
-        visibility: hidden;
+      @page {
+        margin: 15mm 15mm 15mm 15mm;
+        size: auto;
       }
-      #preview-render-area, #preview-render-area * {
-        visibility: visible;
+
+      html, body {
+        background: #ffffff !important;
+        color: #111827 !important;
+        height: auto !important;
+        overflow: visible !important;
+        font-size: 11pt !important;
+        margin: 0 !important;
+        padding: 0 !important;
       }
-      #preview-render-area {
-        position: absolute;
-        left: 0;
-        top: 0;
+
+      /* Hide application chrome when printing */
+      header, 
+      #mobileTabGroup, 
+      #paneEditor, 
+      .no-print, 
+      nav, 
+      button, 
+      select, 
+      #statusIndicator,
+      .border-b {
+        display: none !important;
+      }
+
+      /* Unhide and un-constrain document container */
+      #mainWorkspace, 
+      #panePreview, 
+      #previewContainer {
+        display: block !important;
+        position: static !important;
         width: 100% !important;
+        height: auto !important;
+        overflow: visible !important;
+        background: transparent !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        border: none !important;
+      }
+
+      #preview-render-area {
+        display: block !important;
+        position: static !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        min-height: auto !important;
         margin: 0 !important;
         padding: 0 !important;
         box-shadow: none !important;
+        border: none !important;
       }
-      .no-print {
-        display: none !important;
+
+      .page-break {
+        page-break-after: always !important;
+        break-after: page !important;
+        height: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+      }
+
+      .pdf-content h1, 
+      .pdf-content h2, 
+      .pdf-content h3 {
+        page-break-after: avoid !important;
+        break-after: avoid !important;
+      }
+
+      .pdf-content pre, 
+      .pdf-content table, 
+      .pdf-content blockquote,
+      .pdf-content .code-block-wrapper,
+      .katex-display {
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
       }
     }
   </style>
@@ -1135,45 +1195,108 @@
       markdownInput.focus();
     });
 
-    // Browser Print
+    // Browser Print (Native vector print dialog)
     printBtn.addEventListener('click', () => {
+      renderMarkdown(true);
       window.print();
     });
 
-    // PDF Download using html2pdf.js
-    downloadPdfBtn.addEventListener('click', async () => {
+    // Dedicated zero-cutoff PDF export function using an isolated off-screen sandbox
+    async function exportToPdfDirect() {
       const originalText = downloadBtnText.textContent;
-      downloadBtnText.textContent = "Generating...";
+      downloadBtnText.textContent = "Exporting...";
       downloadPdfBtn.disabled = true;
 
-      const element = previewRenderArea;
-      const marginMm = parseInt(marginSelect.value, 10);
-      const isA4 = pageSize.value === 'a4';
+      // Guarantee latest markdown is parsed
+      renderMarkdown(true);
 
+      const isA4 = pageSize.value === 'a4';
+      const marginMm = parseInt(marginSelect.value, 10) || 15;
+      const themeClass = themeSelect.value;
+      const fontSizeVal = fontSize.value;
+
+      // Extract title from H1 for clean filename
+      let filename = 'document.pdf';
+      const h1 = renderTarget.querySelector('h1');
+      if (h1 && h1.textContent.trim()) {
+        const cleanTitle = h1.textContent.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+        if (cleanTitle) filename = `${cleanTitle}.pdf`;
+      }
+
+      // Target physical width: A4 = 210mm, US Letter = 215.9mm (8.5in)
+      const targetWidthMm = isA4 ? 210 : 215.9;
+
+      // Create an off-screen sandbox container immune to screen resize, mobile tabs, scroll offsets, or box shadows
+      const printSandbox = document.createElement('div');
+      printSandbox.id = 'pdf-export-sandbox';
+      printSandbox.style.position = 'fixed';
+      printSandbox.style.left = '-10000px';
+      printSandbox.style.top = '0';
+      printSandbox.style.width = targetWidthMm + 'mm';
+      printSandbox.style.padding = `${marginMm}mm`;
+      printSandbox.style.boxSizing = 'border-box';
+      printSandbox.style.backgroundColor = '#ffffff';
+      printSandbox.style.color = '#1f2937';
+      printSandbox.style.fontSize = fontSizeVal;
+      printSandbox.style.lineHeight = '1.65';
+      printSandbox.style.zIndex = '-9999';
+      printSandbox.className = 'pdf-content ' + themeClass;
+
+      // Deep clone rendered content
+      printSandbox.innerHTML = renderTarget.innerHTML;
+
+      // Enforce break-inside avoid rules on all block elements inside the clone
+      printSandbox.querySelectorAll('pre, table, blockquote, .code-block-wrapper, .katex-display').forEach(el => {
+        el.style.pageBreakInside = 'avoid';
+        el.style.breakInside = 'avoid';
+      });
+
+      document.body.appendChild(printSandbox);
+
+      // Options for html2pdf
       const opt = {
-        margin: [marginMm, marginMm, marginMm, marginMm],
-        filename: 'document.pdf',
+        margin: 0, // Padding inside printSandbox provides exact margins without horizontal overflow or right cutoff
+        filename: filename,
         image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true, letterRendering: true, logging: false },
-        jsPDF: { unit: 'mm', format: isA4 ? 'a4' : 'letter', orientation: 'portrait' },
-        pagebreak: { mode: ['css', 'legacy'] }
+        html2canvas: {
+          scale: 2,
+          useCORS: true,
+          letterRendering: true,
+          scrollX: 0,
+          scrollY: 0,
+          windowWidth: targetWidthMm * 3.779527, // Convert mm to CSS px (96 DPI standard)
+          logging: false
+        },
+        jsPDF: {
+          unit: 'mm',
+          format: isA4 ? 'a4' : 'letter',
+          orientation: 'portrait'
+        },
+        pagebreak: {
+          mode: ['avoid-all', 'css', 'legacy'],
+          avoid: ['p', 'h1', 'h2', 'h3', 'h4', 'li', 'tr', 'pre', 'blockquote', '.code-block-wrapper', '.katex-display']
+        }
       };
 
       try {
-        const originalPadding = element.style.padding;
-        element.style.padding = '0px';
-
-        await html2pdf().set(opt).from(element).save();
-
-        element.style.padding = originalPadding;
+        // Allow brief frame for off-screen reflow and KaTeX metrics
+        await new Promise(r => setTimeout(r, 80));
+        await html2pdf().set(opt).from(printSandbox).save();
       } catch (err) {
-        console.error("PDF generation failed:", err);
+        console.error("html2pdf export failed:", err);
+        alert("Direct PDF export encountered a browser limitation. Opening native print dialog to save as PDF...");
         window.print();
       } finally {
+        if (printSandbox && printSandbox.parentNode) {
+          printSandbox.parentNode.removeChild(printSandbox);
+        }
         downloadBtnText.textContent = originalText;
         downloadPdfBtn.disabled = false;
       }
-    });
+    }
+
+    // PDF Download Event Listener
+    downloadPdfBtn.addEventListener('click', exportToPdfDirect);
 
     // Editor formatting helpers
     function insertSnippet(before, after = '', defaultText = '') {
