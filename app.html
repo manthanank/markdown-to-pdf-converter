@@ -412,6 +412,7 @@
       <div class="flex items-center gap-1">
         <label for="marginSelect" class="hidden md:inline text-slate-600 font-medium">Margins:</label>
         <select id="marginSelect" class="bg-white border border-slate-300 rounded px-1.5 py-1 text-[11px] sm:text-xs focus:ring-1 focus:ring-indigo-500 outline-none">
+          <option value="0">0mm (Zero / Edge-to-Edge)</option>
           <option value="12">12mm</option>
           <option value="20" selected>20mm</option>
           <option value="28">28mm</option>
@@ -544,6 +545,21 @@
               <span>💡 In the dialog that opens, select Destination:</span>
               <strong class="underline">Save as PDF</strong>
             </p>
+
+            <!-- Guide to remove browser URL header & Date/Title footer -->
+            <div class="mt-2.5 bg-white border border-indigo-200/90 rounded-xl p-2.5 sm:p-3 text-xs text-slate-800 space-y-1.5 shadow-2xs">
+              <div class="flex items-center gap-1.5 font-bold text-slate-900 text-xs">
+                <i data-lucide="shield-check" class="w-4 h-4 text-emerald-600 shrink-0"></i>
+                <span>How to remove browser URL & date headers:</span>
+              </div>
+              <div class="text-[11px] text-slate-600 leading-relaxed pl-5 space-y-0.5">
+                <div>1. In the print dialog, click <strong>More settings ▾</strong></div>
+                <div>2. <strong class="text-rose-600">Uncheck</strong> the box: <span class="inline-flex items-center gap-1 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-300 font-medium text-slate-900">☐ Headers and footers</span></div>
+                <div class="text-[10px] text-emerald-700 font-medium pt-0.5">
+                  ✓ Chrome remembers this setting for all future PDF saves!
+                </div>
+              </div>
+            </div>
           </div>
           <button id="modalBtnVectorPrint" class="mt-3.5 w-full bg-indigo-600 hover:bg-indigo-700 active:scale-98 text-white font-bold py-2.5 px-4 rounded-xl shadow-md shadow-indigo-600/25 flex items-center justify-center gap-2 text-xs transition">
             <i data-lucide="printer" class="w-4 h-4"></i>
@@ -1282,17 +1298,44 @@
       }
 
       const isA4 = pageSize.value === 'a4';
-      const marginMm = parseInt(marginSelect.value, 10) || 15;
+      const marginMm = isNaN(parseInt(marginSelect.value, 10)) ? 20 : parseInt(marginSelect.value, 10);
       const pageFormat = isA4 ? 'A4 portrait' : 'letter portrait';
 
-      styleEl.textContent = `
-        @media print {
-          @page {
-            size: ${pageFormat} !important;
-            margin: ${marginMm}mm !important;
+      if (marginMm === 0) {
+        // Zero-margin setting: forces Chromium to suppress default browser header URL and date footer
+        styleEl.textContent = `
+          @media print {
+            @page {
+              size: ${pageFormat} !important;
+              margin: 0 !important;
+            }
+            body {
+              margin: 0 !important;
+              padding: 0 !important;
+            }
+            #preview-render-area {
+              padding: 16mm !important;
+              box-sizing: border-box !important;
+            }
           }
-        }
-      `;
+        `;
+      } else {
+        styleEl.textContent = `
+          @media print {
+            @page {
+              size: ${pageFormat} !important;
+              margin: ${marginMm}mm !important;
+            }
+            body {
+              margin: 0 !important;
+              padding: 0 !important;
+            }
+            #preview-render-area {
+              padding: 0 !important;
+            }
+          }
+        `;
+      }
     }
 
     // High-Resolution Native Vector Print-to-PDF (Supports Unlimited Pages)
@@ -1385,7 +1428,7 @@
       }
 
       const isA4 = pageSize.value === 'a4';
-      const marginMm = parseInt(marginSelect.value, 10) || 15;
+      const marginMm = isNaN(parseInt(marginSelect.value, 10)) ? 20 : parseInt(marginSelect.value, 10);
       const themeClass = themeSelect.value;
       const fontSizeVal = fontSize.value;
 
