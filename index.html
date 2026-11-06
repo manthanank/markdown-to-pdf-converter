@@ -6,8 +6,22 @@
   <title>Markdown to PDF Studio | Turn Markdown into Publication-Ready PDFs</title>
   <meta name="description" content="A modern, 100% client-side Markdown to PDF Studio. Real-time preview, KaTeX LaTeX math, syntax highlighting, physical paper simulation, and vector PDF export.">
 
-  <!-- Tailwind CSS CDN -->
+  <!-- Script to apply dark mode immediately before render (prevents flash) -->
+  <script>
+    if (localStorage.getItem('color-theme') === 'dark' || (!('color-theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+
+  <!-- Tailwind CSS CDN with dark mode enabled via class -->
   <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class'
+    }
+  </script>
 
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -39,23 +53,49 @@
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
     }
+    .dark .gradient-text {
+      background: linear-gradient(135deg, #818cf8 0%, #a78bfa 50%, #60a5fa 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
     .gradient-hero-bg {
       background: radial-gradient(circle at 50% -20%, rgba(99, 102, 241, 0.15) 0%, rgba(248, 250, 252, 0) 70%);
+    }
+    .dark .gradient-hero-bg {
+      background: radial-gradient(circle at 50% -20%, rgba(99, 102, 241, 0.25) 0%, rgba(2, 6, 23, 0) 70%);
     }
     .glassmorphism {
       background: rgba(255, 255, 255, 0.85);
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
     }
+    .dark .glassmorphism {
+      background: rgba(15, 23, 42, 0.88);
+      border-color: rgba(30, 41, 59, 0.8);
+    }
     .glow-shadow {
       box-shadow: 0 20px 40px -15px rgba(79, 70, 229, 0.18), 0 0 20px -5px rgba(99, 102, 241, 0.12);
     }
+    .dark .glow-shadow {
+      box-shadow: 0 20px 40px -15px rgba(99, 102, 241, 0.2), 0 0 25px -5px rgba(99, 102, 241, 0.15);
+    }
+    /* Dark mode syntax highlighting overrides */
+    .dark .hljs {
+      background: #0f172a !important;
+      color: #e2e8f0 !important;
+    }
+    .dark .hljs-keyword, .dark .hljs-selector-tag { color: #818cf8 !important; }
+    .dark .hljs-string, .dark .hljs-title { color: #34d399 !important; }
+    .dark .hljs-comment { color: #64748b !important; }
+    .dark .hljs-number { color: #fbbf24 !important; }
+    .dark .katex { color: #e2e8f0 !important; }
+    .dark .katex-display { color: #e2e8f0 !important; }
   </style>
 </head>
-<body class="bg-slate-50 text-slate-800 antialiased selection:bg-indigo-100 selection:text-indigo-900">
+<body class="bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 antialiased selection:bg-indigo-100 selection:text-indigo-900 dark:selection:bg-indigo-900 dark:selection:text-indigo-200 transition-colors duration-200">
 
   <!-- Sticky Navbar -->
-  <header class="sticky top-0 z-50 glassmorphism border-b border-slate-200/80 transition-all">
+  <header class="sticky top-0 z-50 glassmorphism border-b border-slate-200/80 dark:border-slate-800 transition-all">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
       <!-- Brand Logo -->
       <a href="#" class="flex items-center gap-3 group">
@@ -63,29 +103,36 @@
           <i data-lucide="file-text" class="w-5 h-5"></i>
         </div>
         <div>
-          <span class="font-extrabold text-slate-900 text-base sm:text-lg tracking-tight flex items-center gap-1.5">
+          <span class="font-extrabold text-slate-900 dark:text-white text-base sm:text-lg tracking-tight flex items-center gap-1.5">
             Markdown to PDF
-            <span class="text-[10px] font-bold uppercase tracking-wider bg-indigo-100 text-indigo-700 px-1.5 py-0.5 rounded border border-indigo-200">Studio</span>
+            <span class="text-[10px] font-bold uppercase tracking-wider bg-indigo-100 dark:bg-indigo-950/80 text-indigo-700 dark:text-indigo-300 px-1.5 py-0.5 rounded border border-indigo-200 dark:border-indigo-800">Studio</span>
           </span>
-          <span class="hidden sm:block text-[11px] text-slate-500 font-medium">100% Client-Side • Privacy-First</span>
+          <span class="hidden sm:block text-[11px] text-slate-500 dark:text-slate-400 font-medium">100% Client-Side • Privacy-First</span>
         </div>
       </a>
 
       <!-- Desktop Navigation Links -->
-      <nav class="hidden md:flex items-center gap-8 text-sm font-semibold text-slate-600">
-        <a href="#features" class="hover:text-indigo-600 transition">Features</a>
-        <a href="#templates" class="hover:text-indigo-600 transition">Templates</a>
-        <a href="#playground" class="hover:text-indigo-600 transition">Live Demo</a>
-        <a href="#how-it-works" class="hover:text-indigo-600 transition">How It Works</a>
-        <a href="#faq" class="hover:text-indigo-600 transition">FAQ</a>
+      <nav class="hidden md:flex items-center gap-8 text-sm font-semibold text-slate-600 dark:text-slate-300">
+        <a href="#features" class="hover:text-indigo-600 dark:hover:text-indigo-400 transition">Features</a>
+        <a href="#templates" class="hover:text-indigo-600 dark:hover:text-indigo-400 transition">Templates</a>
+        <a href="#playground" class="hover:text-indigo-600 dark:hover:text-indigo-400 transition">Live Demo</a>
+        <a href="#how-it-works" class="hover:text-indigo-600 dark:hover:text-indigo-400 transition">How It Works</a>
+        <a href="#faq" class="hover:text-indigo-600 dark:hover:text-indigo-400 transition">FAQ</a>
       </nav>
 
-      <!-- Action Buttons -->
-      <div class="flex items-center gap-3">
-        <a href="https://github.com/manthanank/markdown-to-pdf-converter" target="_blank" rel="noopener noreferrer" class="hidden sm:inline-flex items-center gap-1.5 text-xs font-semibold text-slate-700 hover:text-slate-900 bg-white hover:bg-slate-100 border border-slate-300 px-3 py-2 rounded-lg shadow-2xs transition">
+      <!-- Action Buttons & Theme Toggle -->
+      <div class="flex items-center gap-2.5 sm:gap-3">
+        <!-- Light / Dark Mode Toggle Button -->
+        <button id="themeToggleBtn" title="Toggle Light/Dark Theme" aria-label="Toggle dark/light mode" class="p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700 transition">
+          <i data-lucide="moon" id="themeIconDark" class="w-4 h-4"></i>
+          <i data-lucide="sun" id="themeIconLight" class="w-4 h-4 hidden"></i>
+        </button>
+
+        <a href="https://github.com/manthanank/markdown-to-pdf-converter" target="_blank" rel="noopener noreferrer" class="hidden sm:inline-flex items-center gap-1.5 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-300 dark:border-slate-700 px-3 py-2 rounded-lg shadow-2xs transition">
           <i data-lucide="github" class="w-4 h-4"></i>
           <span>GitHub</span>
         </a>
+        
         <a href="app.html" class="inline-flex items-center gap-2 text-xs sm:text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 active:scale-95 px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl shadow-md shadow-indigo-600/25 transition">
           <span>Launch Studio</span>
           <i data-lucide="arrow-right" class="w-4 h-4"></i>
@@ -99,20 +146,20 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
       
       <!-- Top Announcement Pill -->
-      <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-indigo-50 border border-indigo-200/80 text-indigo-700 text-xs sm:text-sm font-semibold mb-6 shadow-2xs">
-        <span class="flex h-2 w-2 rounded-full bg-indigo-600 animate-pulse"></span>
+      <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-indigo-50 dark:bg-indigo-950/70 border border-indigo-200/80 dark:border-indigo-800/80 text-indigo-700 dark:text-indigo-300 text-xs sm:text-sm font-semibold mb-6 shadow-2xs">
+        <span class="flex h-2 w-2 rounded-full bg-indigo-600 dark:bg-indigo-400 animate-pulse"></span>
         <span>Version 1.0 Live</span>
-        <span class="text-slate-300">•</span>
-        <span class="text-slate-600 font-normal">Zero Server Calls • 100% In-Browser</span>
+        <span class="text-slate-300 dark:text-slate-700">•</span>
+        <span class="text-slate-600 dark:text-slate-300 font-normal">Zero Server Calls • 100% In-Browser</span>
       </div>
 
       <!-- Main Headline -->
-      <h1 class="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-slate-900 max-w-4xl mx-auto leading-[1.1]">
+      <h1 class="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-slate-900 dark:text-white max-w-4xl mx-auto leading-[1.1]">
         Transform Markdown into <span class="gradient-text">Publication-Ready</span> PDFs
       </h1>
 
       <!-- Subtitle -->
-      <p class="mt-6 text-base sm:text-lg lg:text-xl text-slate-600 max-w-2xl mx-auto font-normal leading-relaxed">
+      <p class="mt-6 text-base sm:text-lg lg:text-xl text-slate-600 dark:text-slate-300 max-w-2xl mx-auto font-normal leading-relaxed">
         The distraction-free in-browser studio featuring GitHub Flavored Markdown, KaTeX LaTeX formulas, syntax highlighting, and physical sheet simulation.
       </p>
 
@@ -122,83 +169,83 @@
           <span>Open Studio Workspace</span>
           <i data-lucide="arrow-right" class="w-5 h-5"></i>
         </a>
-        <a href="#playground" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 text-base font-semibold text-slate-700 hover:text-slate-900 bg-white hover:bg-slate-100 border border-slate-300 px-6 py-3.5 rounded-xl shadow-xs transition">
-          <i data-lucide="play" class="w-4 h-4 text-indigo-600"></i>
+        <a href="#playground" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 text-base font-semibold text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-300 dark:border-slate-700 px-6 py-3.5 rounded-xl shadow-xs transition">
+          <i data-lucide="play" class="w-4 h-4 text-indigo-600 dark:text-indigo-400"></i>
           <span>Try Mini Demo</span>
         </a>
       </div>
 
       <!-- Key Trust Features -->
-      <div class="mt-10 flex flex-wrap items-center justify-center gap-6 sm:gap-10 text-xs sm:text-sm font-medium text-slate-500">
+      <div class="mt-10 flex flex-wrap items-center justify-center gap-6 sm:gap-10 text-xs sm:text-sm font-medium text-slate-500 dark:text-slate-400">
         <div class="flex items-center gap-2">
-          <i data-lucide="shield-check" class="w-4 h-4 text-emerald-600"></i>
+          <i data-lucide="shield-check" class="w-4 h-4 text-emerald-600 dark:text-emerald-400"></i>
           <span>100% Private (No Cloud Uploads)</span>
         </div>
         <div class="flex items-center gap-2">
-          <i data-lucide="sigma" class="w-4 h-4 text-indigo-600"></i>
+          <i data-lucide="sigma" class="w-4 h-4 text-indigo-600 dark:text-indigo-400"></i>
           <span>Full LaTeX Math (KaTeX)</span>
         </div>
         <div class="flex items-center gap-2">
-          <i data-lucide="printer" class="w-4 h-4 text-violet-600"></i>
+          <i data-lucide="printer" class="w-4 h-4 text-violet-600 dark:text-violet-400"></i>
           <span>A4 & US Letter Paper Scaling</span>
         </div>
         <div class="flex items-center gap-2">
-          <i data-lucide="sparkles" class="w-4 h-4 text-amber-500"></i>
+          <i data-lucide="sparkles" class="w-4 h-4 text-amber-500 dark:text-amber-400"></i>
           <span>Auto-Format Engine</span>
         </div>
       </div>
 
       <!-- Hero Visual: Mockup Studio Window -->
-      <div class="mt-14 max-w-5xl mx-auto rounded-2xl bg-white border border-slate-200/90 shadow-2xl overflow-hidden glow-shadow">
+      <div class="mt-14 max-w-5xl mx-auto rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 shadow-2xl overflow-hidden glow-shadow">
         <!-- Mockup Header -->
-        <div class="bg-slate-100/90 border-b border-slate-200 px-4 py-3 flex items-center justify-between">
+        <div class="bg-slate-100/90 dark:bg-slate-800/90 border-b border-slate-200 dark:border-slate-800 px-4 py-3 flex items-center justify-between">
           <div class="flex items-center gap-2">
             <div class="w-3 h-3 rounded-full bg-rose-400"></div>
             <div class="w-3 h-3 rounded-full bg-amber-400"></div>
             <div class="w-3 h-3 rounded-full bg-emerald-400"></div>
-            <span class="ml-2 text-xs font-mono font-medium text-slate-500">markdown-to-pdf-studio // live-workspace</span>
+            <span class="ml-2 text-xs font-mono font-medium text-slate-500 dark:text-slate-400">markdown-to-pdf-studio // live-workspace</span>
           </div>
-          <div class="flex items-center gap-2 text-xs font-medium text-slate-500">
-            <span class="inline-flex items-center gap-1 text-emerald-600 font-semibold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 text-[11px]">
+          <div class="flex items-center gap-2 text-xs font-medium text-slate-500 dark:text-slate-400">
+            <span class="inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-semibold bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-200 dark:border-emerald-800 text-[11px]">
               <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Synced 1:1
             </span>
           </div>
         </div>
 
         <!-- Mockup Split Editor / Preview Area -->
-        <div class="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-slate-200 text-left bg-slate-50/50">
+        <div class="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-slate-200 dark:divide-slate-800 text-left bg-slate-50/50 dark:bg-slate-950/40">
           <!-- Left: Code Editor Mockup -->
-          <div class="p-5 font-mono text-xs leading-relaxed text-slate-700 bg-white overflow-hidden">
-            <div class="text-slate-400 text-[11px] uppercase font-bold tracking-wider mb-2 flex items-center gap-1.5">
+          <div class="p-5 font-mono text-xs leading-relaxed text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-950 overflow-hidden">
+            <div class="text-slate-400 dark:text-slate-500 text-[11px] uppercase font-bold tracking-wider mb-2 flex items-center gap-1.5">
               <i data-lucide="code-2" class="w-3.5 h-3.5"></i> Source Editor
             </div>
-            <p class="text-indigo-600 font-bold"># Deep Learning Survey</p>
-            <p class="text-slate-500">**Authors:** Alex Rivera, Dr. Thorne</p>
-            <p class="text-slate-400 mt-2">---</p>
-            <p class="mt-2 text-slate-800 font-semibold">## Attention Mechanism</p>
-            <p class="text-slate-600">The scaled dot-product attention:</p>
-            <p class="bg-slate-100 p-2 rounded text-indigo-700 mt-2 border border-slate-200">
+            <p class="text-indigo-600 dark:text-indigo-400 font-bold"># Deep Learning Survey</p>
+            <p class="text-slate-500 dark:text-slate-400">**Authors:** Alex Rivera, Dr. Thorne</p>
+            <p class="text-slate-400 dark:text-slate-600 mt-2">---</p>
+            <p class="mt-2 text-slate-800 dark:text-slate-200 font-semibold">## Attention Mechanism</p>
+            <p class="text-slate-600 dark:text-slate-400">The scaled dot-product attention:</p>
+            <p class="bg-slate-100 dark:bg-slate-900 p-2 rounded text-indigo-700 dark:text-indigo-300 mt-2 border border-slate-200 dark:border-slate-800">
               $$ \text{Attention}(Q,K,V) = \text{softmax}\left(\frac{QK^T}{\sqrt{d_k}}\right)V $$
             </p>
-            <p class="text-slate-400 mt-3">```python</p>
-            <p class="text-slate-800">scores = torch.matmul(q, k.transpose(-2, -1)) * scale</p>
-            <p class="text-slate-800">weights = torch.softmax(scores, dim=-1)</p>
-            <p class="text-slate-400">```</p>
+            <p class="text-slate-400 dark:text-slate-600 mt-3">```python</p>
+            <p class="text-slate-800 dark:text-slate-200">scores = torch.matmul(q, k.transpose(-2, -1)) * scale</p>
+            <p class="text-slate-800 dark:text-slate-200">weights = torch.softmax(scores, dim=-1)</p>
+            <p class="text-slate-400 dark:text-slate-600">```</p>
           </div>
 
           <!-- Right: Rendered Sheet Mockup -->
-          <div class="p-6 bg-slate-100/70 flex flex-col justify-center">
-            <div class="text-slate-400 text-[11px] uppercase font-bold tracking-wider mb-2 flex items-center gap-1.5">
+          <div class="p-6 bg-slate-100/70 dark:bg-slate-900/60 flex flex-col justify-center">
+            <div class="text-slate-400 dark:text-slate-500 text-[11px] uppercase font-bold tracking-wider mb-2 flex items-center gap-1.5">
               <i data-lucide="eye" class="w-3.5 h-3.5"></i> A4 Physical Sheet Preview
             </div>
-            <div class="bg-white p-6 rounded-lg shadow-md border border-slate-200 space-y-3">
-              <h2 class="text-lg font-bold text-slate-900 border-b pb-1">Deep Learning Survey</h2>
-              <p class="text-xs text-slate-500"><strong>Authors:</strong> Alex Rivera, Dr. Thorne</p>
-              <h3 class="text-sm font-semibold text-slate-800 pt-1">Attention Mechanism</h3>
-              <div class="bg-indigo-50/50 p-2 rounded border border-indigo-100 text-center font-serif text-sm text-indigo-900 font-medium">
+            <div class="bg-white dark:bg-slate-900 p-6 rounded-lg shadow-md border border-slate-200 dark:border-slate-700/80 space-y-3">
+              <h2 class="text-lg font-bold text-slate-900 dark:text-white border-b dark:border-slate-800 pb-1">Deep Learning Survey</h2>
+              <p class="text-xs text-slate-500 dark:text-slate-400"><strong>Authors:</strong> Alex Rivera, Dr. Thorne</p>
+              <h3 class="text-sm font-semibold text-slate-800 dark:text-slate-200 pt-1">Attention Mechanism</h3>
+              <div class="bg-indigo-50/50 dark:bg-indigo-950/50 p-2 rounded border border-indigo-100 dark:border-indigo-900 text-center font-serif text-sm text-indigo-900 dark:text-indigo-300 font-medium">
                 Attention(Q,K,V) = softmax( QK<sup>T</sup> / &radic;d<sub>k</sub> ) V
               </div>
-              <div class="bg-slate-900 text-emerald-400 p-2.5 rounded text-[11px] font-mono leading-tight shadow-inner">
+              <div class="bg-slate-900 dark:bg-slate-950 text-emerald-400 p-2.5 rounded text-[11px] font-mono leading-tight shadow-inner border dark:border-slate-800">
                 <span class="text-slate-400"># PyTorch Implementation</span><br>
                 scores = torch.matmul(q, k.t()) * scale<br>
                 weights = torch.softmax(scores, dim=-1)
@@ -208,9 +255,9 @@
         </div>
 
         <!-- Mockup Bottom Bar -->
-        <div class="bg-white border-t border-slate-200 px-4 py-2.5 flex items-center justify-between text-xs text-slate-500">
-          <span>Theme: <strong class="text-slate-700">Modern Clean</strong> • Paper: <strong class="text-slate-700">A4 (20mm Margins)</strong></span>
-          <a href="app.html" class="font-bold text-indigo-600 hover:text-indigo-800 flex items-center gap-1">
+        <div class="bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 px-4 py-2.5 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
+          <span>Theme: <strong class="text-slate-700 dark:text-slate-300">Modern Clean</strong> • Paper: <strong class="text-slate-700 dark:text-slate-300">A4 (20mm Margins)</strong></span>
+          <a href="app.html" class="font-bold text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 flex items-center gap-1">
             Open Full Interactive Studio <i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i>
           </a>
         </div>
@@ -219,59 +266,59 @@
   </section>
 
   <!-- Interactive Live Playground Section -->
-  <section id="playground" class="py-16 sm:py-24 bg-white border-y border-slate-200">
+  <section id="playground" class="py-16 sm:py-24 bg-white dark:bg-slate-900 border-y border-slate-200 dark:border-slate-800">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="text-center max-w-3xl mx-auto mb-12">
-        <span class="text-xs font-bold uppercase tracking-wider text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full border border-indigo-200">Interactive Preview</span>
-        <h2 class="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight mt-3">
+        <span class="text-xs font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/70 px-3 py-1 rounded-full border border-indigo-200 dark:border-indigo-800">Interactive Preview</span>
+        <h2 class="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight mt-3">
           Try it right here in your browser
         </h2>
-        <p class="text-slate-600 mt-2 text-base">
+        <p class="text-slate-600 dark:text-slate-300 mt-2 text-base">
           Type Markdown, LaTeX math ($...$ or $$...$$), or click any quick sample to test the instant rendering engine.
         </p>
       </div>
 
       <!-- Playground Component -->
-      <div class="max-w-5xl mx-auto bg-slate-50 rounded-2xl border border-slate-200 shadow-xl overflow-hidden">
+      <div class="max-w-5xl mx-auto bg-slate-50 dark:bg-slate-950 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xl overflow-hidden">
         <!-- Playground Header Controls -->
-        <div class="bg-slate-100 border-b border-slate-200 px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+        <div class="bg-slate-100 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-4 py-3 flex flex-wrap items-center justify-between gap-3">
           <div class="flex items-center gap-2">
-            <span class="text-xs font-bold text-slate-700 uppercase tracking-wider">Quick Presets:</span>
-            <button id="presetMath" class="text-xs font-medium bg-white hover:bg-indigo-50 text-slate-700 hover:text-indigo-700 border border-slate-300 px-2.5 py-1 rounded-md transition shadow-2xs">LaTeX Formula</button>
-            <button id="presetCode" class="text-xs font-medium bg-white hover:bg-indigo-50 text-slate-700 hover:text-indigo-700 border border-slate-300 px-2.5 py-1 rounded-md transition shadow-2xs">Code Block</button>
-            <button id="presetTable" class="text-xs font-medium bg-white hover:bg-indigo-50 text-slate-700 hover:text-indigo-700 border border-slate-300 px-2.5 py-1 rounded-md transition shadow-2xs">GFM Table</button>
+            <span class="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Quick Presets:</span>
+            <button id="presetMath" class="text-xs font-medium bg-white dark:bg-slate-800 hover:bg-indigo-50 dark:hover:bg-indigo-950 text-slate-700 dark:text-slate-200 hover:text-indigo-700 dark:hover:text-indigo-400 border border-slate-300 dark:border-slate-700 px-2.5 py-1 rounded-md transition shadow-2xs">LaTeX Formula</button>
+            <button id="presetCode" class="text-xs font-medium bg-white dark:bg-slate-800 hover:bg-indigo-50 dark:hover:bg-indigo-950 text-slate-700 dark:text-slate-200 hover:text-indigo-700 dark:hover:text-indigo-400 border border-slate-300 dark:border-slate-700 px-2.5 py-1 rounded-md transition shadow-2xs">Code Block</button>
+            <button id="presetTable" class="text-xs font-medium bg-white dark:bg-slate-800 hover:bg-indigo-50 dark:hover:bg-indigo-950 text-slate-700 dark:text-slate-200 hover:text-indigo-700 dark:hover:text-indigo-400 border border-slate-300 dark:border-slate-700 px-2.5 py-1 rounded-md transition shadow-2xs">GFM Table</button>
           </div>
-          <a href="app.html" class="inline-flex items-center gap-1.5 text-xs font-bold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 px-3 py-1 rounded-md transition">
+          <a href="app.html" class="inline-flex items-center gap-1.5 text-xs font-bold text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-950/70 hover:bg-indigo-100 dark:hover:bg-indigo-900 border border-indigo-200 dark:border-indigo-800 px-3 py-1 rounded-md transition">
             <span>Open In Full Studio</span>
             <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
           </a>
         </div>
 
         <!-- Playground Editor + Preview -->
-        <div class="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-slate-200 min-h-[380px]">
+        <div class="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-slate-200 dark:divide-slate-800 min-h-[380px]">
           <!-- Input Area -->
-          <div class="flex flex-col bg-white">
-            <div class="bg-slate-50/90 border-b border-slate-200 px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider text-slate-500 flex items-center justify-between">
+          <div class="flex flex-col bg-white dark:bg-slate-900">
+            <div class="bg-slate-50/90 dark:bg-slate-800/90 border-b border-slate-200 dark:border-slate-800 px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center justify-between">
               <span>Markdown Source</span>
               <span id="playgroundCharCount" class="font-normal font-mono">0 chars</span>
             </div>
             <textarea
               id="playgroundInput"
               spellcheck="false"
-              class="w-full flex-1 p-4 font-mono text-xs sm:text-sm text-slate-800 bg-white border-0 outline-none resize-none leading-relaxed selection:bg-indigo-100"
+              class="w-full flex-1 p-4 font-mono text-xs sm:text-sm text-slate-800 dark:text-slate-100 bg-white dark:bg-slate-900 border-0 outline-none resize-none leading-relaxed selection:bg-indigo-100 dark:selection:bg-indigo-900"
               placeholder="Type your markdown and math here..."
             ></textarea>
           </div>
 
           <!-- Preview Area -->
-          <div class="flex flex-col bg-slate-50">
-            <div class="bg-slate-100/90 border-b border-slate-200 px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider text-slate-500 flex items-center justify-between">
+          <div class="flex flex-col bg-slate-50 dark:bg-slate-950">
+            <div class="bg-slate-100/90 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center justify-between">
               <span>Live Compiled Output</span>
-              <span class="text-emerald-600 font-semibold flex items-center gap-1">
+              <span class="text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1">
                 <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Live
               </span>
             </div>
-            <div id="playgroundOutput" class="flex-1 p-5 overflow-auto text-slate-800 prose prose-slate prose-sm max-w-none">
+            <div id="playgroundOutput" class="flex-1 p-5 overflow-auto text-slate-800 dark:text-slate-100 prose prose-slate dark:prose-invert prose-sm max-w-none">
               <!-- Render output target -->
             </div>
           </div>
@@ -281,15 +328,15 @@
   </section>
 
   <!-- Key Features Grid -->
-  <section id="features" class="py-20 sm:py-28 bg-slate-50">
+  <section id="features" class="py-20 sm:py-28 bg-slate-50 dark:bg-slate-950">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       
       <div class="text-center max-w-3xl mx-auto mb-16">
-        <span class="text-xs font-bold uppercase tracking-wider text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full border border-indigo-200">Engineered for Quality</span>
-        <h2 class="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight mt-3">
+        <span class="text-xs font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/70 px-3 py-1 rounded-full border border-indigo-200 dark:border-indigo-800">Engineered for Quality</span>
+        <h2 class="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight mt-3">
           Everything You Need for Beautiful Documents
         </h2>
-        <p class="text-slate-600 mt-2 text-base sm:text-lg">
+        <p class="text-slate-600 dark:text-slate-400 mt-2 text-base sm:text-lg">
           No complex LaTeX toolchains, no bloated desktop software. Instant compiled PDFs right inside your web browser.
         </p>
       </div>
@@ -297,67 +344,67 @@
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         
         <!-- Feature 1 -->
-        <div class="bg-white rounded-2xl p-7 border border-slate-200 hover:border-indigo-300 hover:shadow-lg transition-all group">
-          <div class="w-12 h-12 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center mb-5 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
+        <div class="bg-white dark:bg-slate-900 rounded-2xl p-7 border border-slate-200 dark:border-slate-800 hover:border-indigo-300 dark:hover:border-indigo-600 hover:shadow-lg dark:hover:shadow-indigo-500/5 transition-all group">
+          <div class="w-12 h-12 rounded-xl bg-indigo-50 dark:bg-indigo-950/70 text-indigo-600 dark:text-indigo-400 flex items-center justify-center mb-5 group-hover:bg-indigo-600 group-hover:text-white dark:group-hover:bg-indigo-500 transition-colors">
             <i data-lucide="sigma" class="w-6 h-6"></i>
           </div>
-          <h3 class="text-lg font-bold text-slate-900 mb-2">KaTeX Mathematical Typesetting</h3>
-          <p class="text-sm text-slate-600 leading-relaxed">
-            Full LaTeX math rendering for inline formulas like <code class="text-xs bg-slate-100 px-1 py-0.5 rounded font-mono text-indigo-700">$E=mc^2$</code> and complex display matrices or calculus integrals.
+          <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-2">KaTeX Mathematical Typesetting</h3>
+          <p class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+            Full LaTeX math rendering for inline formulas like <code class="text-xs bg-slate-100 dark:bg-slate-800 px-1 py-0.5 rounded font-mono text-indigo-700 dark:text-indigo-300">$E=mc^2$</code> and complex display matrices or calculus integrals.
           </p>
         </div>
 
         <!-- Feature 2 -->
-        <div class="bg-white rounded-2xl p-7 border border-slate-200 hover:border-indigo-300 hover:shadow-lg transition-all group">
-          <div class="w-12 h-12 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center mb-5 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
+        <div class="bg-white dark:bg-slate-900 rounded-2xl p-7 border border-slate-200 dark:border-slate-800 hover:border-indigo-300 dark:hover:border-indigo-600 hover:shadow-lg dark:hover:shadow-indigo-500/5 transition-all group">
+          <div class="w-12 h-12 rounded-xl bg-indigo-50 dark:bg-indigo-950/70 text-indigo-600 dark:text-indigo-400 flex items-center justify-center mb-5 group-hover:bg-indigo-600 group-hover:text-white dark:group-hover:bg-indigo-500 transition-colors">
             <i data-lucide="code-2" class="w-6 h-6"></i>
           </div>
-          <h3 class="text-lg font-bold text-slate-900 mb-2">Multi-Language Code Highlighting</h3>
-          <p class="text-sm text-slate-600 leading-relaxed">
+          <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-2">Multi-Language Code Highlighting</h3>
+          <p class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
             Highlighted code blocks for TypeScript, Python, Bash, HTML, SCSS, JSON, and auto-detection, enclosed in sleek modern frames with language indicators.
           </p>
         </div>
 
         <!-- Feature 3 -->
-        <div class="bg-white rounded-2xl p-7 border border-slate-200 hover:border-indigo-300 hover:shadow-lg transition-all group">
-          <div class="w-12 h-12 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center mb-5 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
+        <div class="bg-white dark:bg-slate-900 rounded-2xl p-7 border border-slate-200 dark:border-slate-800 hover:border-indigo-300 dark:hover:border-indigo-600 hover:shadow-lg dark:hover:shadow-indigo-500/5 transition-all group">
+          <div class="w-12 h-12 rounded-xl bg-indigo-50 dark:bg-indigo-950/70 text-indigo-600 dark:text-indigo-400 flex items-center justify-center mb-5 group-hover:bg-indigo-600 group-hover:text-white dark:group-hover:bg-indigo-500 transition-colors">
             <i data-lucide="layers" class="w-6 h-6"></i>
           </div>
-          <h3 class="text-lg font-bold text-slate-900 mb-2">Physical Sheet Simulation</h3>
-          <p class="text-sm text-slate-600 leading-relaxed">
+          <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-2">Physical Sheet Simulation</h3>
+          <p class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
             Realistic physical sheet canvas on screen with true A4 (210mm &times; 297mm) and US Letter dimensions, customizable margins (12mm, 20mm, 28mm), and font scaling.
           </p>
         </div>
 
         <!-- Feature 4 -->
-        <div class="bg-white rounded-2xl p-7 border border-slate-200 hover:border-indigo-300 hover:shadow-lg transition-all group">
-          <div class="w-12 h-12 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center mb-5 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
+        <div class="bg-white dark:bg-slate-900 rounded-2xl p-7 border border-slate-200 dark:border-slate-800 hover:border-indigo-300 dark:hover:border-indigo-600 hover:shadow-lg dark:hover:shadow-indigo-500/5 transition-all group">
+          <div class="w-12 h-12 rounded-xl bg-indigo-50 dark:bg-indigo-950/70 text-indigo-600 dark:text-indigo-400 flex items-center justify-center mb-5 group-hover:bg-indigo-600 group-hover:text-white dark:group-hover:bg-indigo-500 transition-colors">
             <i data-lucide="refresh-cw" class="w-6 h-6"></i>
           </div>
-          <h3 class="text-lg font-bold text-slate-900 mb-2">1:1 Bi-Directional Sync Scroll</h3>
-          <p class="text-sm text-slate-600 leading-relaxed">
+          <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-2">1:1 Bi-Directional Sync Scroll</h3>
+          <p class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
             Scroll synchronization anchors map source lines to rendered DOM nodes, ensuring you never lose your position when writing long academic or technical documents.
           </p>
         </div>
 
         <!-- Feature 5 -->
-        <div class="bg-white rounded-2xl p-7 border border-slate-200 hover:border-indigo-300 hover:shadow-lg transition-all group">
-          <div class="w-12 h-12 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center mb-5 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
+        <div class="bg-white dark:bg-slate-900 rounded-2xl p-7 border border-slate-200 dark:border-slate-800 hover:border-indigo-300 dark:hover:border-indigo-600 hover:shadow-lg dark:hover:shadow-indigo-500/5 transition-all group">
+          <div class="w-12 h-12 rounded-xl bg-indigo-50 dark:bg-indigo-950/70 text-indigo-600 dark:text-indigo-400 flex items-center justify-center mb-5 group-hover:bg-indigo-600 group-hover:text-white dark:group-hover:bg-indigo-500 transition-colors">
             <i data-lucide="wand-2" class="w-6 h-6"></i>
           </div>
-          <h3 class="text-lg font-bold text-slate-900 mb-2">Smart Auto-Repair Engine</h3>
-          <p class="text-sm text-slate-600 leading-relaxed">
+          <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-2">Smart Auto-Repair Engine</h3>
+          <p class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
             Built-in preprocessor detects and repairs unfenced code, escapes loose HTML tags, fixes numbered question lists, and normalizes ASCII dividers with one click.
           </p>
         </div>
 
         <!-- Feature 6 -->
-        <div class="bg-white rounded-2xl p-7 border border-slate-200 hover:border-indigo-300 hover:shadow-lg transition-all group">
-          <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center mb-5 group-hover:bg-emerald-600 group-hover:text-white transition-colors">
+        <div class="bg-white dark:bg-slate-900 rounded-2xl p-7 border border-slate-200 dark:border-slate-800 hover:border-indigo-300 dark:hover:border-indigo-600 hover:shadow-lg dark:hover:shadow-indigo-500/5 transition-all group">
+          <div class="w-12 h-12 rounded-xl bg-emerald-50 dark:bg-emerald-950/70 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mb-5 group-hover:bg-emerald-600 group-hover:text-white dark:group-hover:bg-emerald-500 transition-colors">
             <i data-lucide="lock" class="w-6 h-6"></i>
           </div>
-          <h3 class="text-lg font-bold text-slate-900 mb-2">100% Client-Side Privacy</h3>
-          <p class="text-sm text-slate-600 leading-relaxed">
+          <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-2">100% Client-Side Privacy</h3>
+          <p class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
             Zero telemetry, zero analytics, and zero cloud uploads. Your confidential drafts, proprietary code, and notes never leave your personal computer memory.
           </p>
         </div>
@@ -367,15 +414,15 @@
   </section>
 
   <!-- Pre-Built Templates Showcase -->
-  <section id="templates" class="py-20 sm:py-28 bg-white border-y border-slate-200">
+  <section id="templates" class="py-20 sm:py-28 bg-white dark:bg-slate-900 border-y border-slate-200 dark:border-slate-800">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       
       <div class="text-center max-w-3xl mx-auto mb-16">
-        <span class="text-xs font-bold uppercase tracking-wider text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full border border-indigo-200">Instant Jumpstart</span>
-        <h2 class="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight mt-3">
+        <span class="text-xs font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/70 px-3 py-1 rounded-full border border-indigo-200 dark:border-indigo-800">Instant Jumpstart</span>
+        <h2 class="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight mt-3">
           Pre-Loaded Professional Templates
         </h2>
-        <p class="text-slate-600 mt-2 text-base sm:text-lg">
+        <p class="text-slate-600 dark:text-slate-400 mt-2 text-base sm:text-lg">
           Click any template to load it directly into the Studio workspace.
         </p>
       </div>
@@ -383,68 +430,68 @@
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         
         <!-- Template 1: Report -->
-        <div class="bg-slate-50 rounded-2xl p-6 border border-slate-200 hover:border-indigo-400 hover:shadow-md transition flex flex-col justify-between">
+        <div class="bg-slate-50 dark:bg-slate-950 rounded-2xl p-6 border border-slate-200 dark:border-slate-800 hover:border-indigo-400 dark:hover:border-indigo-500 hover:shadow-md transition flex flex-col justify-between">
           <div>
-            <div class="w-10 h-10 rounded-lg bg-indigo-100 text-indigo-700 flex items-center justify-center mb-4">
+            <div class="w-10 h-10 rounded-lg bg-indigo-100 dark:bg-indigo-950/80 text-indigo-700 dark:text-indigo-300 flex items-center justify-center mb-4">
               <i data-lucide="graduation-cap" class="w-5 h-5"></i>
             </div>
-            <h3 class="font-bold text-slate-900 text-base mb-1">Academic Survey</h3>
-            <p class="text-xs text-slate-600 mb-4 leading-relaxed">
+            <h3 class="font-bold text-slate-900 dark:text-white text-base mb-1">Academic Survey</h3>
+            <p class="text-xs text-slate-600 dark:text-slate-400 mb-4 leading-relaxed">
               Research survey with abstract, LaTeX attention formulas, benchmark matrix tables, and PyTorch projection code.
             </p>
           </div>
-          <a href="app.html?template=report" class="inline-flex items-center justify-center gap-1.5 text-xs font-bold text-indigo-600 hover:text-indigo-800 bg-white hover:bg-indigo-50 border border-slate-300 hover:border-indigo-300 py-2 rounded-lg transition">
+          <a href="app.html?template=report" class="inline-flex items-center justify-center gap-1.5 text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 bg-white dark:bg-slate-900 hover:bg-indigo-50 dark:hover:bg-indigo-950/70 border border-slate-300 dark:border-slate-700 hover:border-indigo-300 dark:hover:border-indigo-600 py-2 rounded-lg transition">
             <span>Open Template</span>
             <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
           </a>
         </div>
 
         <!-- Template 2: Resume -->
-        <div class="bg-slate-50 rounded-2xl p-6 border border-slate-200 hover:border-indigo-400 hover:shadow-md transition flex flex-col justify-between">
+        <div class="bg-slate-50 dark:bg-slate-950 rounded-2xl p-6 border border-slate-200 dark:border-slate-800 hover:border-indigo-400 dark:hover:border-indigo-500 hover:shadow-md transition flex flex-col justify-between">
           <div>
-            <div class="w-10 h-10 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center mb-4">
+            <div class="w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-950/80 text-blue-700 dark:text-blue-300 flex items-center justify-center mb-4">
               <i data-lucide="briefcase" class="w-5 h-5"></i>
             </div>
-            <h3 class="font-bold text-slate-900 text-base mb-1">Executive Resume</h3>
-            <p class="text-xs text-slate-600 mb-4 leading-relaxed">
+            <h3 class="font-bold text-slate-900 dark:text-white text-base mb-1">Executive Resume</h3>
+            <p class="text-xs text-slate-600 dark:text-slate-400 mb-4 leading-relaxed">
               Clean single-page CV template highlighting core competencies, technical leadership, and career milestones.
             </p>
           </div>
-          <a href="app.html?template=resume" class="inline-flex items-center justify-center gap-1.5 text-xs font-bold text-indigo-600 hover:text-indigo-800 bg-white hover:bg-indigo-50 border border-slate-300 hover:border-indigo-300 py-2 rounded-lg transition">
+          <a href="app.html?template=resume" class="inline-flex items-center justify-center gap-1.5 text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 bg-white dark:bg-slate-900 hover:bg-indigo-50 dark:hover:bg-indigo-950/70 border border-slate-300 dark:border-slate-700 hover:border-indigo-300 dark:hover:border-indigo-600 py-2 rounded-lg transition">
             <span>Open Template</span>
             <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
           </a>
         </div>
 
         <!-- Template 3: Docs -->
-        <div class="bg-slate-50 rounded-2xl p-6 border border-slate-200 hover:border-indigo-400 hover:shadow-md transition flex flex-col justify-between">
+        <div class="bg-slate-50 dark:bg-slate-950 rounded-2xl p-6 border border-slate-200 dark:border-slate-800 hover:border-indigo-400 dark:hover:border-indigo-500 hover:shadow-md transition flex flex-col justify-between">
           <div>
-            <div class="w-10 h-10 rounded-lg bg-violet-100 text-violet-700 flex items-center justify-center mb-4">
+            <div class="w-10 h-10 rounded-lg bg-violet-100 dark:bg-violet-950/80 text-violet-700 dark:text-violet-300 flex items-center justify-center mb-4">
               <i data-lucide="book-open" class="w-5 h-5"></i>
             </div>
-            <h3 class="font-bold text-slate-900 text-base mb-1">API Developer Docs</h3>
-            <p class="text-xs text-slate-600 mb-4 leading-relaxed">
+            <h3 class="font-bold text-slate-900 dark:text-white text-base mb-1">API Developer Docs</h3>
+            <p class="text-xs text-slate-600 dark:text-slate-400 mb-4 leading-relaxed">
               Structured REST API reference with authentication headers, status code tables, and formatted JSON response bodies.
             </p>
           </div>
-          <a href="app.html?template=docs" class="inline-flex items-center justify-center gap-1.5 text-xs font-bold text-indigo-600 hover:text-indigo-800 bg-white hover:bg-indigo-50 border border-slate-300 hover:border-indigo-300 py-2 rounded-lg transition">
+          <a href="app.html?template=docs" class="inline-flex items-center justify-center gap-1.5 text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 bg-white dark:bg-slate-900 hover:bg-indigo-50 dark:hover:bg-indigo-950/70 border border-slate-300 dark:border-slate-700 hover:border-indigo-300 dark:hover:border-indigo-600 py-2 rounded-lg transition">
             <span>Open Template</span>
             <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
           </a>
         </div>
 
         <!-- Template 4: Cheatsheet -->
-        <div class="bg-slate-50 rounded-2xl p-6 border border-slate-200 hover:border-indigo-400 hover:shadow-md transition flex flex-col justify-between">
+        <div class="bg-slate-50 dark:bg-slate-950 rounded-2xl p-6 border border-slate-200 dark:border-slate-800 hover:border-indigo-400 dark:hover:border-indigo-500 hover:shadow-md transition flex flex-col justify-between">
           <div>
-            <div class="w-10 h-10 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center mb-4">
+            <div class="w-10 h-10 rounded-lg bg-amber-100 dark:bg-amber-950/80 text-amber-700 dark:text-amber-300 flex items-center justify-center mb-4">
               <i data-lucide="list-checks" class="w-5 h-5"></i>
             </div>
-            <h3 class="font-bold text-slate-900 text-base mb-1">Markdown & Math Cheat Sheet</h3>
-            <p class="text-xs text-slate-600 mb-4 leading-relaxed">
+            <h3 class="font-bold text-slate-900 dark:text-white text-base mb-1">Markdown & Math Cheat Sheet</h3>
+            <p class="text-xs text-slate-600 dark:text-slate-400 mb-4 leading-relaxed">
               Quick syntax guide for typography, task lists, GFM table column alignment, and Gaussian display integrals.
             </p>
           </div>
-          <a href="app.html?template=cheatsheet" class="inline-flex items-center justify-center gap-1.5 text-xs font-bold text-indigo-600 hover:text-indigo-800 bg-white hover:bg-indigo-50 border border-slate-300 hover:border-indigo-300 py-2 rounded-lg transition">
+          <a href="app.html?template=cheatsheet" class="inline-flex items-center justify-center gap-1.5 text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 bg-white dark:bg-slate-900 hover:bg-indigo-50 dark:hover:bg-indigo-950/70 border border-slate-300 dark:border-slate-700 hover:border-indigo-300 dark:hover:border-indigo-600 py-2 rounded-lg transition">
             <span>Open Template</span>
             <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
           </a>
@@ -455,46 +502,46 @@
   </section>
 
   <!-- How It Works Section -->
-  <section id="how-it-works" class="py-20 sm:py-28 bg-slate-50">
+  <section id="how-it-works" class="py-20 sm:py-28 bg-slate-50 dark:bg-slate-950">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       
       <div class="text-center max-w-3xl mx-auto mb-16">
-        <span class="text-xs font-bold uppercase tracking-wider text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full border border-indigo-200">Streamlined Workflow</span>
-        <h2 class="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight mt-3">
+        <span class="text-xs font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/70 px-3 py-1 rounded-full border border-indigo-200 dark:border-indigo-800">Streamlined Workflow</span>
+        <h2 class="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight mt-3">
           How It Works in 3 Simple Steps
         </h2>
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-center max-w-5xl mx-auto">
         <!-- Step 1 -->
-        <div class="bg-white p-8 rounded-2xl border border-slate-200 shadow-xs relative">
-          <div class="w-12 h-12 mx-auto rounded-full bg-indigo-600 text-white font-extrabold text-lg flex items-center justify-center mb-5 shadow-md shadow-indigo-600/30">
+        <div class="bg-white dark:bg-slate-900 p-8 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs relative">
+          <div class="w-12 h-12 mx-auto rounded-full bg-indigo-600 dark:bg-indigo-500 text-white font-extrabold text-lg flex items-center justify-center mb-5 shadow-md shadow-indigo-600/30">
             1
           </div>
-          <h3 class="text-lg font-bold text-slate-900 mb-2">Write or Import</h3>
-          <p class="text-sm text-slate-600 leading-relaxed">
-            Paste your raw notes, start from scratch, or import any existing <code class="text-xs bg-slate-100 px-1 py-0.5 rounded font-mono">.md</code> or <code class="text-xs bg-slate-100 px-1 py-0.5 rounded font-mono">.txt</code> file directly from disk.
+          <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-2">Write or Import</h3>
+          <p class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+            Paste your raw notes, start from scratch, or import any existing <code class="text-xs bg-slate-100 dark:bg-slate-800 px-1 py-0.5 rounded font-mono">.md</code> or <code class="text-xs bg-slate-100 dark:bg-slate-800 px-1 py-0.5 rounded font-mono">.txt</code> file directly from disk.
           </p>
         </div>
 
         <!-- Step 2 -->
-        <div class="bg-white p-8 rounded-2xl border border-slate-200 shadow-xs relative">
-          <div class="w-12 h-12 mx-auto rounded-full bg-indigo-600 text-white font-extrabold text-lg flex items-center justify-center mb-5 shadow-md shadow-indigo-600/30">
+        <div class="bg-white dark:bg-slate-900 p-8 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs relative">
+          <div class="w-12 h-12 mx-auto rounded-full bg-indigo-600 dark:bg-indigo-500 text-white font-extrabold text-lg flex items-center justify-center mb-5 shadow-md shadow-indigo-600/30">
             2
           </div>
-          <h3 class="text-lg font-bold text-slate-900 mb-2">Style & Format</h3>
-          <p class="text-sm text-slate-600 leading-relaxed">
+          <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-2">Style & Format</h3>
+          <p class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
             Pick from Modern, Academic, or Monospace themes. Select A4 or Letter paper format, tune margin widths, and use page breaks.
           </p>
         </div>
 
         <!-- Step 3 -->
-        <div class="bg-white p-8 rounded-2xl border border-slate-200 shadow-xs relative">
-          <div class="w-12 h-12 mx-auto rounded-full bg-indigo-600 text-white font-extrabold text-lg flex items-center justify-center mb-5 shadow-md shadow-indigo-600/30">
+        <div class="bg-white dark:bg-slate-900 p-8 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs relative">
+          <div class="w-12 h-12 mx-auto rounded-full bg-indigo-600 dark:bg-indigo-500 text-white font-extrabold text-lg flex items-center justify-center mb-5 shadow-md shadow-indigo-600/30">
             3
           </div>
-          <h3 class="text-lg font-bold text-slate-900 mb-2">Export Vector PDF</h3>
-          <p class="text-sm text-slate-600 leading-relaxed">
+          <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-2">Export Vector PDF</h3>
+          <p class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
             Generate crisp, high-resolution vector PDFs with one click, or send directly to your physical printer with browser print optimization.
           </p>
         </div>
@@ -504,65 +551,65 @@
   </section>
 
   <!-- FAQ Section -->
-  <section id="faq" class="py-20 sm:py-28 bg-white border-t border-slate-200">
+  <section id="faq" class="py-20 sm:py-28 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800">
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
       
       <div class="text-center mb-16">
-        <span class="text-xs font-bold uppercase tracking-wider text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full border border-indigo-200">Got Questions?</span>
-        <h2 class="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight mt-3">
+        <span class="text-xs font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/70 px-3 py-1 rounded-full border border-indigo-200 dark:border-indigo-800">Got Questions?</span>
+        <h2 class="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight mt-3">
           Frequently Asked Questions
         </h2>
       </div>
 
       <div class="space-y-4">
         <!-- FAQ 1 -->
-        <details class="group bg-slate-50 border border-slate-200 rounded-xl p-5 [&_summary::-webkit-details-marker]:hidden cursor-pointer">
-          <summary class="flex items-center justify-between font-bold text-slate-900 text-base">
+        <details class="group bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-5 [&_summary::-webkit-details-marker]:hidden cursor-pointer">
+          <summary class="flex items-center justify-between font-bold text-slate-900 dark:text-white text-base">
             <span>Is my document content stored or sent to any server?</span>
-            <span class="ml-4 shrink-0 text-slate-500 group-open:rotate-180 transition-transform">
+            <span class="ml-4 shrink-0 text-slate-500 dark:text-slate-400 group-open:rotate-180 transition-transform">
               <i data-lucide="chevron-down" class="w-5 h-5"></i>
             </span>
           </summary>
-          <p class="mt-3 text-sm text-slate-600 leading-relaxed">
+          <p class="mt-3 text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
             <strong>No, absolutely not.</strong> Markdown to PDF Studio runs 100% inside your client web browser. All parsing, syntax highlighting, LaTeX equation rendering, and PDF compilation take place directly on your machine. No text is ever transmitted over the network.
           </p>
         </details>
 
         <!-- FAQ 2 -->
-        <details class="group bg-slate-50 border border-slate-200 rounded-xl p-5 [&_summary::-webkit-details-marker]:hidden cursor-pointer">
-          <summary class="flex items-center justify-between font-bold text-slate-900 text-base">
+        <details class="group bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-5 [&_summary::-webkit-details-marker]:hidden cursor-pointer">
+          <summary class="flex items-center justify-between font-bold text-slate-900 dark:text-white text-base">
             <span>How do I force a page break in my PDF?</span>
-            <span class="ml-4 shrink-0 text-slate-500 group-open:rotate-180 transition-transform">
+            <span class="ml-4 shrink-0 text-slate-500 dark:text-slate-400 group-open:rotate-180 transition-transform">
               <i data-lucide="chevron-down" class="w-5 h-5"></i>
             </span>
           </summary>
-          <p class="mt-3 text-sm text-slate-600 leading-relaxed">
-            Simply insert the special HTML comment <code class="text-xs bg-slate-200 px-1 py-0.5 rounded font-mono">&lt;!-- page-break --&gt;</code> wherever you want a clean page split, or click the <strong>Break</strong> button on the editor toolbar. The PDF engine will immediately start a new physical page.
+          <p class="mt-3 text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+            Simply insert the special HTML comment <code class="text-xs bg-slate-200 dark:bg-slate-800 px-1 py-0.5 rounded font-mono">&lt;!-- page-break --&gt;</code> wherever you want a clean page split, or click the <strong>Break</strong> button on the editor toolbar. The PDF engine will immediately start a new physical page.
           </p>
         </details>
 
         <!-- FAQ 3 -->
-        <details class="group bg-slate-50 border border-slate-200 rounded-xl p-5 [&_summary::-webkit-details-marker]:hidden cursor-pointer">
-          <summary class="flex items-center justify-between font-bold text-slate-900 text-base">
+        <details class="group bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-5 [&_summary::-webkit-details-marker]:hidden cursor-pointer">
+          <summary class="flex items-center justify-between font-bold text-slate-900 dark:text-white text-base">
             <span>Can I work completely offline?</span>
-            <span class="ml-4 shrink-0 text-slate-500 group-open:rotate-180 transition-transform">
+            <span class="ml-4 shrink-0 text-slate-500 dark:text-slate-400 group-open:rotate-180 transition-transform">
               <i data-lucide="chevron-down" class="w-5 h-5"></i>
             </span>
           </summary>
-          <p class="mt-3 text-sm text-slate-600 leading-relaxed">
+          <p class="mt-3 text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
             Yes! Once the webpage assets are cached by your browser, or if you clone the repository locally, the application requires zero active internet connection to edit and export PDFs.
           </p>
         </details>
 
         <!-- FAQ 4 -->
-        <details class="group bg-slate-50 border border-slate-200 rounded-xl p-5 [&_summary::-webkit-details-marker]:hidden cursor-pointer">
-          <summary class="flex items-center justify-between font-bold text-slate-900 text-base">
+        <details class="group bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-5 [&_summary::-webkit-details-marker]:hidden cursor-pointer">
+          <summary class="flex items-center justify-between font-bold text-slate-900 dark:text-white text-base">
             <span>Is this open source and free for commercial use?</span>
-            <span class="ml-4 shrink-0 text-slate-500 group-open:rotate-180 transition-transform">
+            <span class="ml-4 shrink-0 text-slate-500 dark:text-slate-400 group-open:rotate-180 transition-transform">
               <i data-lucide="chevron-down" class="w-5 h-5"></i>
             </span>
           </summary>
-          <p class="mt-3 text-sm text-slate-600 leading-relaxed">
+          <p class="mt-3 text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
             Yes, this project is licensed under the permissive <strong>MIT License</strong>. You can use it freely for personal projects, academic reports, corporate documentation, or commercial work.
           </p>
         </details>
@@ -572,12 +619,12 @@
   </section>
 
   <!-- Bottom CTA Banner -->
-  <section class="py-16 sm:py-24 bg-gradient-to-tr from-indigo-900 via-indigo-800 to-slate-900 text-white text-center relative overflow-hidden">
+  <section class="py-16 sm:py-24 bg-gradient-to-tr from-indigo-900 via-indigo-800 to-slate-900 dark:from-indigo-950 dark:via-slate-900 dark:to-slate-950 text-white text-center relative overflow-hidden">
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
       <h2 class="text-3xl sm:text-5xl font-extrabold tracking-tight">
         Ready to Create Publication-Quality PDFs?
       </h2>
-      <p class="mt-4 text-base sm:text-lg text-indigo-200 max-w-xl mx-auto font-normal">
+      <p class="mt-4 text-base sm:text-lg text-indigo-200 dark:text-indigo-300 max-w-xl mx-auto font-normal">
         No signup required. Open the studio right now and start typing or pasting your Markdown.
       </p>
       <div class="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -594,7 +641,7 @@
   </section>
 
   <!-- Footer -->
-  <footer class="bg-slate-900 text-slate-400 py-12 border-t border-slate-800 text-xs sm:text-sm">
+  <footer class="bg-slate-900 dark:bg-black text-slate-400 py-12 border-t border-slate-800 dark:border-slate-900 text-xs sm:text-sm">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-6">
       
       <div class="flex items-center gap-3">
@@ -624,10 +671,42 @@
     </div>
   </footer>
 
-  <!-- Interactive Mini-Playground Script -->
+  <!-- Scripts: Icons, Theme Toggle, and Playground -->
   <script>
     // Initialize Lucide icons
     lucide.createIcons();
+
+    // Theme Toggle Functionality
+    const themeToggleBtn = document.getElementById('themeToggleBtn');
+    const themeIconDark = document.getElementById('themeIconDark');
+    const themeIconLight = document.getElementById('themeIconLight');
+
+    function updateThemeIcons(isDark) {
+      if (isDark) {
+        themeIconLight.classList.remove('hidden');
+        themeIconDark.classList.add('hidden');
+      } else {
+        themeIconDark.classList.remove('hidden');
+        themeIconLight.classList.add('hidden');
+      }
+    }
+
+    // Initialize toggle icon to current state
+    const currentIsDark = document.documentElement.classList.contains('dark');
+    updateThemeIcons(currentIsDark);
+
+    themeToggleBtn.addEventListener('click', () => {
+      const willBeDark = !document.documentElement.classList.contains('dark');
+      if (willBeDark) {
+        document.documentElement.classList.add('dark');
+        localStorage.setItem('color-theme', 'dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+        localStorage.setItem('color-theme', 'light');
+      }
+      updateThemeIcons(willBeDark);
+      lucide.createIcons();
+    });
 
     // Playground functionality
     const playgroundInput = document.getElementById('playgroundInput');
