@@ -223,7 +223,7 @@
     /* Browser Print Optimization */
     @media print {
       @page {
-        margin: 15mm 15mm 15mm 15mm;
+        margin: 15mm;
         size: auto;
       }
 
@@ -231,10 +231,12 @@
         background: #ffffff !important;
         color: #111827 !important;
         height: auto !important;
+        min-height: 100% !important;
         overflow: visible !important;
         font-size: 11pt !important;
         margin: 0 !important;
         padding: 0 !important;
+        position: static !important;
       }
 
       /* Hide application chrome when printing */
@@ -242,15 +244,16 @@
       #mobileTabGroup, 
       #paneEditor, 
       .no-print, 
-      nav, 
-      button, 
-      select, 
-      #statusIndicator,
-      .border-b {
+      #previewHeaderBar,
+      #workspaceSecondaryBar,
+      #exportModal,
+      nav,
+      button,
+      select {
         display: none !important;
       }
 
-      /* Unhide and un-constrain document container */
+      /* Unhide and un-constrain document container for multi-page pagination */
       #mainWorkspace, 
       #panePreview, 
       #previewContainer {
@@ -263,6 +266,7 @@
         margin: 0 !important;
         padding: 0 !important;
         border: none !important;
+        flex: none !important;
       }
 
       #preview-render-area {
@@ -378,7 +382,7 @@
   </header>
 
   <!-- Workspace & Settings Secondary Bar -->
-  <div class="bg-slate-50 border-b border-slate-200 px-3 sm:px-4 py-1.5 sm:py-2 flex flex-wrap items-center justify-between gap-2 text-xs shrink-0 overflow-x-auto">
+  <div id="workspaceSecondaryBar" class="bg-slate-50 border-b border-slate-200 px-3 sm:px-4 py-1.5 sm:py-2 flex flex-wrap items-center justify-between gap-2 text-xs shrink-0 overflow-x-auto">
     <!-- Responsive View Tab Mode for Mobile / Tablet -->
     <div class="flex items-center bg-slate-200/80 p-0.5 rounded-lg lg:hidden" id="mobileTabGroup">
       <button id="tabEditor" class="px-2.5 py-1 text-xs font-semibold rounded-md bg-white text-indigo-700 shadow-xs transition">Edit</button>
@@ -479,7 +483,7 @@
     <!-- Right Pane: Live Document Preview -->
     <section id="panePreview" class="w-full lg:w-1/2 hidden lg:flex flex-col bg-slate-200/80 overflow-hidden h-full">
       <!-- Preview Header Toolbar -->
-      <div class="bg-slate-100/90 border-b border-slate-300 px-3 py-1.5 flex items-center justify-between text-xs text-slate-600 shrink-0">
+      <div id="previewHeaderBar" class="bg-slate-100/90 border-b border-slate-300 px-3 py-1.5 flex items-center justify-between text-xs text-slate-600 shrink-0">
         <span class="font-medium flex items-center gap-1.5">
           <i data-lucide="eye" class="w-3.5 h-3.5 text-slate-500"></i>
           Live PDF Preview
@@ -504,6 +508,71 @@
       </div>
     </section>
   </main>
+
+  <!-- Export PDF Modal -->
+  <div id="exportModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full border border-slate-200 overflow-hidden">
+      <!-- Modal Header -->
+      <div class="px-5 py-3.5 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-lg bg-indigo-600 text-white flex items-center justify-center font-bold shadow-xs">
+            <i data-lucide="file-down" class="w-4 h-4"></i>
+          </div>
+          <div>
+            <h3 class="font-bold text-slate-900 text-sm">Export Document to PDF</h3>
+            <p id="exportDocStats" class="text-[11px] text-slate-500 font-medium">Ready to compile</p>
+          </div>
+        </div>
+        <button id="closeExportModalBtn" class="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-200 transition">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="p-5 sm:p-6 space-y-4">
+        <!-- Option 1: Native Vector Print to PDF (Primary Recommendation) -->
+        <div class="border-2 border-indigo-600 bg-indigo-50/50 rounded-xl p-4 transition relative shadow-2xs">
+          <div class="space-y-1">
+            <div class="flex items-center gap-2">
+              <span class="font-bold text-slate-900 text-sm">Save as PDF (Vector Quality)</span>
+              <span class="text-[10px] uppercase tracking-wider font-extrabold bg-indigo-600 text-white px-2 py-0.5 rounded-full">Recommended</span>
+            </div>
+            <p class="text-xs text-slate-600 leading-relaxed">
+              Uses the browser's native PDF engine. <strong>Required for long documents</strong> (supports 1 to 100+ pages without canvas limits). Generates crisp vector text, selectable code, and automatic pagination.
+            </p>
+            <p class="text-[11px] text-indigo-700 font-semibold pt-1 flex items-center gap-1">
+              <span>💡 In the dialog that opens, select Destination:</span>
+              <strong class="underline">Save as PDF</strong>
+            </p>
+          </div>
+          <button id="modalBtnVectorPrint" class="mt-3.5 w-full bg-indigo-600 hover:bg-indigo-700 active:scale-98 text-white font-bold py-2.5 px-4 rounded-xl shadow-md shadow-indigo-600/25 flex items-center justify-center gap-2 text-xs transition">
+            <i data-lucide="printer" class="w-4 h-4"></i>
+            <span>Open & Save as PDF (All Pages)</span>
+          </button>
+        </div>
+
+        <!-- Option 2: Direct File Download -->
+        <div class="border border-slate-200 bg-slate-50/50 rounded-xl p-4 transition hover:border-slate-300">
+          <div class="space-y-1">
+            <div class="flex items-center gap-2">
+              <span class="font-bold text-slate-800 text-sm">Direct Download (.pdf file)</span>
+              <span class="text-[10px] font-semibold bg-white text-slate-600 px-2 py-0.5 rounded border border-slate-200">Short Docs (1-5 pages)</span>
+            </div>
+            <p class="text-xs text-slate-500 leading-relaxed">
+              Direct client-side file download via HTML5 canvas.
+            </p>
+            <div id="largeDocWarning" class="hidden text-[11px] text-amber-800 bg-amber-50 border border-amber-200 p-2.5 rounded-lg mt-2 font-medium leading-relaxed">
+              ⚠️ <strong>Large document detected:</strong> Documents over 5-10 pages exceed browser canvas limits, which causes blank or cut-off pages. Please use <strong>Save as PDF</strong> above to ensure all questions and pages are included.
+            </div>
+          </div>
+          <button id="modalBtnDirectDownload" class="mt-3.5 w-full bg-white hover:bg-slate-100 text-slate-800 font-semibold py-2 px-4 rounded-xl border border-slate-300 flex items-center justify-center gap-2 text-xs transition shadow-2xs">
+            <i data-lucide="download" class="w-4 h-4"></i>
+            <span id="modalDirectBtnText">Download PDF File</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <script>
     // Templates Database (Using string arrays joined by newline to completely avoid backtick syntax collisions)
@@ -1100,6 +1169,10 @@
         previewRenderArea.style.padding = '14px';
         previewRenderArea.style.fontSize = '13.5px';
       }
+
+      if (typeof updatePrintPageStyles === 'function') {
+        updatePrintPageStyles();
+      }
     }
 
     // Responsive Mobile/Tablet View Toggle Handlers
@@ -1199,27 +1272,123 @@
       markdownInput.focus();
     });
 
-    // Browser Print (Native vector print dialog)
-    printBtn.addEventListener('click', () => {
+    // Dynamic @page printer styling
+    function updatePrintPageStyles() {
+      let styleEl = document.getElementById('dynamic-print-css');
+      if (!styleEl) {
+        styleEl = document.createElement('style');
+        styleEl.id = 'dynamic-print-css';
+        document.head.appendChild(styleEl);
+      }
+
+      const isA4 = pageSize.value === 'a4';
+      const marginMm = parseInt(marginSelect.value, 10) || 15;
+      const pageFormat = isA4 ? 'A4 portrait' : 'letter portrait';
+
+      styleEl.textContent = `
+        @media print {
+          @page {
+            size: ${pageFormat} !important;
+            margin: ${marginMm}mm !important;
+          }
+        }
+      `;
+    }
+
+    // High-Resolution Native Vector Print-to-PDF (Supports Unlimited Pages)
+    function triggerPrintToPdf() {
       renderMarkdown(true);
+      updatePrintPageStyles();
+
+      // Extract document title from H1 to pre-fill the browser's suggested PDF filename
+      const originalTitle = document.title;
+      const h1 = renderTarget.querySelector('h1');
+      if (h1 && h1.textContent.trim()) {
+        const cleanTitle = h1.textContent.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+        if (cleanTitle) document.title = cleanTitle;
+      }
+
+      closeExportModal();
+
+      // Trigger browser print preview (Destination defaults to "Save as PDF")
       window.print();
+
+      // Restore original browser tab title after print preview opens
+      setTimeout(() => {
+        document.title = originalTitle;
+      }, 1500);
+    }
+
+    // Modal Elements & Handlers
+    const exportModal = document.getElementById('exportModal');
+    const closeExportModalBtn = document.getElementById('closeExportModalBtn');
+    const modalBtnVectorPrint = document.getElementById('modalBtnVectorPrint');
+    const modalBtnDirectDownload = document.getElementById('modalBtnDirectDownload');
+    const exportDocStats = document.getElementById('exportDocStats');
+    const largeDocWarning = document.getElementById('largeDocWarning');
+
+    function openExportModal() {
+      renderMarkdown(true);
+      const rawText = markdownInput.value;
+      const words = rawText.trim() ? rawText.trim().split(/\s+/).length : 0;
+      const estPages = Math.max(1, Math.ceil(words / 350));
+
+      exportDocStats.textContent = `${rawText.length.toLocaleString()} characters • ${words.toLocaleString()} words • ~${estPages} pages`;
+
+      // If document is longer than ~3 pages (over 7,000 characters), warn about browser canvas limits
+      if (rawText.length > 7000 || words > 1000) {
+        largeDocWarning.classList.remove('hidden');
+      } else {
+        largeDocWarning.classList.add('hidden');
+      }
+
+      exportModal.classList.remove('hidden');
+      lucide.createIcons();
+    }
+
+    function closeExportModal() {
+      exportModal.classList.add('hidden');
+    }
+
+    if (closeExportModalBtn) closeExportModalBtn.addEventListener('click', closeExportModal);
+    if (exportModal) {
+      exportModal.addEventListener('click', (e) => {
+        if (e.target === exportModal) closeExportModal();
+      });
+    }
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !exportModal.classList.contains('hidden')) {
+        closeExportModal();
+      }
     });
 
-    // Dedicated zero-cutoff PDF export function using an isolated off-screen sandbox
-    async function exportToPdfDirect() {
-      const originalText = downloadBtnText.textContent;
-      downloadBtnText.textContent = "Exporting...";
-      downloadPdfBtn.disabled = true;
+    if (modalBtnVectorPrint) modalBtnVectorPrint.addEventListener('click', triggerPrintToPdf);
+    if (printBtn) printBtn.addEventListener('click', triggerPrintToPdf);
 
-      // Guarantee latest markdown is parsed
+    // Direct Download Function with loading overlay & canvas boundary protection
+    async function directDownloadCanvasPdf() {
+      const modalDirectBtnText = document.getElementById('modalDirectBtnText');
+      const originalText = modalDirectBtnText ? modalDirectBtnText.textContent : 'Download PDF File';
+      if (modalDirectBtnText) modalDirectBtnText.textContent = "Processing...";
+
       renderMarkdown(true);
+
+      const rawText = markdownInput.value;
+      const words = rawText.trim() ? rawText.trim().split(/\s+/).length : 0;
+
+      // Browser canvas memory safety check: > 15,000 chars will crash single canvas height
+      if (rawText.length > 15000 || words > 2000) {
+        alert("This document is very large (" + words.toLocaleString() + " words / ~" + Math.ceil(words/350) + " pages).\n\nHTML5 Canvas cannot allocate a 40,000px bitmap and will output a blank page.\n\nOpening High-Resolution 'Save as PDF' instead so all pages and questions are preserved!");
+        triggerPrintToPdf();
+        if (modalDirectBtnText) modalDirectBtnText.textContent = originalText;
+        return;
+      }
 
       const isA4 = pageSize.value === 'a4';
       const marginMm = parseInt(marginSelect.value, 10) || 15;
       const themeClass = themeSelect.value;
       const fontSizeVal = fontSize.value;
 
-      // Extract title from H1 for clean filename
       let filename = 'document.pdf';
       const h1 = renderTarget.querySelector('h1');
       if (h1 && h1.textContent.trim()) {
@@ -1227,14 +1396,36 @@
         if (cleanTitle) filename = `${cleanTitle}.pdf`;
       }
 
-      // Target physical width: A4 = 210mm, US Letter = 215.9mm (8.5in)
+      // Show sleek loading overlay
+      const overlay = document.createElement('div');
+      overlay.style.position = 'fixed';
+      overlay.style.inset = '0';
+      overlay.style.backgroundColor = 'rgba(15, 23, 42, 0.75)';
+      overlay.style.backdropFilter = 'blur(4px)';
+      overlay.style.display = 'flex';
+      overlay.style.flexDirection = 'column';
+      overlay.style.alignItems = 'center';
+      overlay.style.justifyContent = 'center';
+      overlay.style.zIndex = '999999';
+      overlay.style.color = '#ffffff';
+      overlay.style.fontFamily = 'system-ui, sans-serif';
+      overlay.innerHTML = `
+        <div style="background: white; color: #1e293b; padding: 24px 32px; border-radius: 16px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); text-align: center; max-width: 340px;">
+          <div style="width: 36px; height: 36px; border: 3px solid #e2e8f0; border-top-color: #4f46e5; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 14px;"></div>
+          <h4 style="font-weight: 700; margin: 0 0 6px; font-size: 15px;">Building PDF File...</h4>
+          <p style="color: #64748b; font-size: 12px; margin: 0;">Rendering pages. Please wait.</p>
+        </div>
+        <style>@keyframes spin { to { transform: rotate(360deg); } }</style>
+      `;
+      document.body.appendChild(overlay);
+
       const targetWidthMm = isA4 ? 210 : 215.9;
 
-      // Create an off-screen sandbox container immune to screen resize, mobile tabs, scroll offsets, or box shadows
+      // Position sandbox in-viewport at top-left behind overlay
       const printSandbox = document.createElement('div');
       printSandbox.id = 'pdf-export-sandbox';
       printSandbox.style.position = 'fixed';
-      printSandbox.style.left = '-10000px';
+      printSandbox.style.left = '0';
       printSandbox.style.top = '0';
       printSandbox.style.width = targetWidthMm + 'mm';
       printSandbox.style.padding = `${marginMm}mm`;
@@ -1243,32 +1434,23 @@
       printSandbox.style.color = '#1f2937';
       printSandbox.style.fontSize = fontSizeVal;
       printSandbox.style.lineHeight = '1.65';
-      printSandbox.style.zIndex = '-9999';
+      printSandbox.style.zIndex = '999990';
       printSandbox.className = 'pdf-content ' + themeClass;
-
-      // Deep clone rendered content
       printSandbox.innerHTML = renderTarget.innerHTML;
-
-      // Enforce break-inside avoid rules on all block elements inside the clone
-      printSandbox.querySelectorAll('pre, table, blockquote, .code-block-wrapper, .katex-display').forEach(el => {
-        el.style.pageBreakInside = 'avoid';
-        el.style.breakInside = 'avoid';
-      });
 
       document.body.appendChild(printSandbox);
 
-      // Options for html2pdf
       const opt = {
-        margin: 0, // Padding inside printSandbox provides exact margins without horizontal overflow or right cutoff
+        margin: 0,
         filename: filename,
         image: { type: 'jpeg', quality: 0.98 },
         html2canvas: {
-          scale: 2,
+          scale: 1.5,
           useCORS: true,
           letterRendering: true,
           scrollX: 0,
           scrollY: 0,
-          windowWidth: targetWidthMm * 3.779527, // Convert mm to CSS px (96 DPI standard)
+          windowWidth: targetWidthMm * 3.779527,
           logging: false
         },
         jsPDF: {
@@ -1283,24 +1465,28 @@
       };
 
       try {
-        // Allow brief frame for off-screen reflow and KaTeX metrics
-        await new Promise(r => setTimeout(r, 80));
+        await new Promise(r => setTimeout(r, 120));
         await html2pdf().set(opt).from(printSandbox).save();
       } catch (err) {
-        console.error("html2pdf export failed:", err);
-        alert("Direct PDF export encountered a browser limitation. Opening native print dialog to save as PDF...");
-        window.print();
+        console.error("html2pdf failed:", err);
+        alert("Direct download encountered a browser limit. Opening high-quality Print & Save as PDF...");
+        triggerPrintToPdf();
       } finally {
         if (printSandbox && printSandbox.parentNode) {
           printSandbox.parentNode.removeChild(printSandbox);
         }
-        downloadBtnText.textContent = originalText;
-        downloadPdfBtn.disabled = false;
+        if (overlay && overlay.parentNode) {
+          overlay.parentNode.removeChild(overlay);
+        }
+        if (modalDirectBtnText) modalDirectBtnText.textContent = originalText;
+        closeExportModal();
       }
     }
 
-    // PDF Download Event Listener
-    downloadPdfBtn.addEventListener('click', exportToPdfDirect);
+    if (modalBtnDirectDownload) modalBtnDirectDownload.addEventListener('click', directDownloadCanvasPdf);
+
+    // Primary Header Export Button Opens Modal
+    downloadPdfBtn.addEventListener('click', openExportModal);
 
     // Editor formatting helpers
     function insertSnippet(before, after = '', defaultText = '') {
