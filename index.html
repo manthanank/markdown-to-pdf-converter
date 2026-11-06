@@ -1,1228 +1,722 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="scroll-smooth">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Markdown to PDF Studio</title>
-  
+  <title>Markdown to PDF Studio | Turn Markdown into Publication-Ready PDFs</title>
+  <meta name="description" content="A modern, 100% client-side Markdown to PDF Studio. Real-time preview, KaTeX LaTeX math, syntax highlighting, physical paper simulation, and vector PDF export.">
+
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
-  
-  <!-- Marked.js for parsing Markdown -->
-  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-  
-  <!-- Highlight.js with broad language bundle for TypeScript, Angular, SCSS, Bash, HTML, JSON -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/typescript.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/scss.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/bash.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/json.min.js"></script>
 
-  <!-- KaTeX for math rendering -->
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <!-- Marked.js & KaTeX for live mini-playground -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
   <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
 
-  <!-- html2pdf.js for direct high-quality PDF generation -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <!-- Highlight.js -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
 
   <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
 
   <style>
-    /* Custom Scrollbars */
-    ::-webkit-scrollbar {
-      width: 6px;
-      height: 6px;
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     }
-    ::-webkit-scrollbar-track {
-      background: rgba(0,0,0,0.03);
+    code, pre, .font-mono {
+      font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
     }
-    ::-webkit-scrollbar-thumb {
-      background: rgba(156, 163, 175, 0.5);
-      border-radius: 3px;
+    .gradient-text {
+      background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #2563eb 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
     }
-    ::-webkit-scrollbar-thumb:hover {
-      background: rgba(107, 114, 128, 0.7);
+    .gradient-hero-bg {
+      background: radial-gradient(circle at 50% -20%, rgba(99, 102, 241, 0.15) 0%, rgba(248, 250, 252, 0) 70%);
     }
-
-    /* Print & Document Themes */
-    .theme-modern {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-      color: #1f2937;
-      line-height: 1.65;
+    .glassmorphism {
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
     }
-    .theme-modern h1 { font-size: 2.15rem; font-weight: 700; color: #111827; border-bottom: 2px solid #e5e7eb; padding-bottom: 0.4rem; margin-top: 1.2rem; margin-bottom: 0.8rem; }
-    .theme-modern h2 { font-size: 1.6rem; font-weight: 600; color: #1f2937; border-bottom: 1px solid #f3f4f6; padding-bottom: 0.3rem; margin-top: 1.1rem; margin-bottom: 0.6rem; }
-    .theme-modern h3 { font-size: 1.25rem; font-weight: 600; color: #374151; margin-top: 0.9rem; margin-bottom: 0.4rem; }
-    .theme-modern p { margin-bottom: 0.85rem; }
-    
-    .theme-academic {
-      font-family: "Times New Roman", Times, Georgia, serif;
-      color: #111;
-      line-height: 1.8;
-      text-align: justify;
-    }
-    .theme-academic h1 { font-size: 2rem; text-align: center; font-weight: bold; margin-bottom: 1.5rem; text-transform: uppercase; letter-spacing: 0.5px; }
-    .theme-academic h2 { font-size: 1.35rem; font-weight: bold; margin-top: 1.4rem; margin-bottom: 0.5rem; border-bottom: 1px solid #333; }
-    .theme-academic h3 { font-size: 1.15rem; font-style: italic; margin-top: 1rem; margin-bottom: 0.4rem; }
-    .theme-academic p { margin-bottom: 1rem; text-indent: 1.5rem; }
-
-    .theme-minimal {
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-      color: #27272a;
-      line-height: 1.6;
-    }
-    .theme-minimal h1 { font-size: 1.65rem; font-weight: 700; text-transform: lowercase; margin-bottom: 1rem; border-left: 4px solid #18181b; padding-left: 0.6rem; }
-    .theme-minimal h2 { font-size: 1.3rem; font-weight: 600; text-transform: lowercase; margin-top: 1.2rem; margin-bottom: 0.5rem; }
-    .theme-minimal h3 { font-size: 1.1rem; font-weight: 600; }
-    .theme-minimal p { margin-bottom: 0.8rem; }
-
-    /* Base Markdown Element Styles */
-    .pdf-content ul { list-style-type: disc; margin-left: 1.5rem; margin-bottom: 0.8rem; }
-    .pdf-content ol { list-style-type: decimal; margin-left: 1.5rem; margin-bottom: 0.8rem; }
-    .pdf-content li { margin-bottom: 0.25rem; }
-    .pdf-content blockquote {
-      border-left: 4px solid #6366f1;
-      background: #f8fafc;
-      padding: 0.6rem 1rem;
-      font-style: italic;
-      color: #475569;
-      margin: 1rem 0;
-      border-radius: 0 4px 4px 0;
-    }
-    .pdf-content table {
-      width: 100%;
-      border-collapse: collapse;
-      margin: 1.2rem 0;
-      font-size: 0.92rem;
-    }
-    .pdf-content table th, .pdf-content table td {
-      border: 1px solid #e2e8f0;
-      padding: 0.5rem 0.75rem;
-      text-align: left;
-    }
-    .pdf-content table th {
-      background-color: #f1f5f9;
-      font-weight: 600;
-    }
-    .pdf-content code:not(pre code) {
-      background-color: #f1f5f9;
-      color: #b91c1c;
-      padding: 0.15rem 0.35rem;
-      border-radius: 0.25rem;
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-      font-size: 0.88em;
-      border: 1px solid #e2e8f0;
-    }
-    /* Sleek, professional modern code box (no double frame, no heavy dark borders) */
-    .pdf-content .code-block-wrapper {
-      margin: 0.75rem 0 1.25rem 0;
-      border: 1px solid #e2e8f0;
-      border-radius: 0.5rem;
-      overflow: hidden;
-      background: #f8fafc;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
-      page-break-inside: avoid;
-      break-inside: avoid;
-    }
-    .pdf-content .code-block-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: #f1f5f9;
-      padding: 0.3rem 0.75rem;
-      border-bottom: 1px solid #e2e8f0;
-      font-size: 0.75rem;
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-      color: #64748b;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
-    .pdf-content pre {
-      background-color: transparent !important;
-      border: none !important;
-      color: #1e293b !important;
-      padding: 0.85rem 1.1rem !important;
-      margin: 0 !important;
-      border-radius: 0 !important;
-      overflow-x: auto;
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-      font-size: 0.865rem;
-      line-height: 1.55;
-    }
-    .pdf-content pre code.hljs {
-      background: transparent !important;
-      padding: 0 !important;
-      color: inherit !important;
-      border: none !important;
-      font-family: inherit;
-    }
-    .pdf-content hr {
-      border: 0;
-      border-top: 1px solid #e2e8f0;
-      margin: 1.5rem 0;
-    }
-    .pdf-content img {
-      max-width: 100%;
-      height: auto;
-      border-radius: 0.375rem;
-      margin: 1rem auto;
-      display: block;
-    }
-
-    /* Print & Pagination Optimizations: Prevent mid-element page slicing */
-    .pdf-content h1, 
-    .pdf-content h2, 
-    .pdf-content h3, 
-    .pdf-content h4 {
-      page-break-after: avoid;
-      break-after: avoid;
-    }
-    .pdf-content pre, 
-    .pdf-content table, 
-    .pdf-content blockquote,
-    .pdf-content .qa-block {
-      page-break-inside: avoid;
-      break-inside: avoid;
-    }
-
-    /* Print Break Utilities */
-    .page-break {
-      page-break-after: always;
-      break-after: page;
-      height: 0;
-      margin: 0;
-      padding: 0;
-    }
-
-    /* Screen simulation of physical paper */
-    .paper-sheet {
-      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
-      transition: all 0.2s ease;
-      width: 100%;
-      max-width: 210mm;
-      box-sizing: border-box;
-    }
-
-    @media (max-width: 640px) {
-      .paper-sheet {
-        padding: 14px !important;
-        font-size: 13.5px !important;
-        box-shadow: none;
-        border-radius: 0.375rem;
-      }
-    }
-
-    /* Browser Print Optimization */
-    @media print {
-      body * {
-        visibility: hidden;
-      }
-      #preview-render-area, #preview-render-area * {
-        visibility: visible;
-      }
-      #preview-render-area {
-        position: absolute;
-        left: 0;
-        top: 0;
-        width: 100% !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        box-shadow: none !important;
-      }
-      .no-print {
-        display: none !important;
-      }
+    .glow-shadow {
+      box-shadow: 0 20px 40px -15px rgba(79, 70, 229, 0.18), 0 0 20px -5px rgba(99, 102, 241, 0.12);
     }
   </style>
 </head>
-<body class="bg-slate-100 h-screen flex flex-col font-sans overflow-hidden text-slate-800 antialiased">
+<body class="bg-slate-50 text-slate-800 antialiased selection:bg-indigo-100 selection:text-indigo-900">
 
-  <!-- Main Navigation Bar -->
-  <header class="bg-white border-b border-slate-200 px-3 sm:px-4 py-2 sm:py-2.5 flex flex-wrap items-center justify-between gap-2 z-20 shrink-0">
-    <div class="flex items-center gap-2.5 min-w-0">
-      <div class="bg-indigo-600 text-white p-1.5 sm:p-2 rounded-lg shadow-sm shrink-0">
-        <i data-lucide="file-text" class="w-4 h-4 sm:w-5 sm:h-5"></i>
+  <!-- Sticky Navbar -->
+  <header class="sticky top-0 z-50 glassmorphism border-b border-slate-200/80 transition-all">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <!-- Brand Logo -->
+      <a href="#" class="flex items-center gap-3 group">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-violet-500 text-white flex items-center justify-center shadow-md shadow-indigo-500/20 group-hover:scale-105 transition-transform">
+          <i data-lucide="file-text" class="w-5 h-5"></i>
+        </div>
+        <div>
+          <span class="font-extrabold text-slate-900 text-base sm:text-lg tracking-tight flex items-center gap-1.5">
+            Markdown to PDF
+            <span class="text-[10px] font-bold uppercase tracking-wider bg-indigo-100 text-indigo-700 px-1.5 py-0.5 rounded border border-indigo-200">Studio</span>
+          </span>
+          <span class="hidden sm:block text-[11px] text-slate-500 font-medium">100% Client-Side • Privacy-First</span>
+        </div>
+      </a>
+
+      <!-- Desktop Navigation Links -->
+      <nav class="hidden md:flex items-center gap-8 text-sm font-semibold text-slate-600">
+        <a href="#features" class="hover:text-indigo-600 transition">Features</a>
+        <a href="#templates" class="hover:text-indigo-600 transition">Templates</a>
+        <a href="#playground" class="hover:text-indigo-600 transition">Live Demo</a>
+        <a href="#how-it-works" class="hover:text-indigo-600 transition">How It Works</a>
+        <a href="#faq" class="hover:text-indigo-600 transition">FAQ</a>
+      </nav>
+
+      <!-- Action Buttons -->
+      <div class="flex items-center gap-3">
+        <a href="https://github.com/manthanank/markdown-to-pdf-converter" target="_blank" rel="noopener noreferrer" class="hidden sm:inline-flex items-center gap-1.5 text-xs font-semibold text-slate-700 hover:text-slate-900 bg-white hover:bg-slate-100 border border-slate-300 px-3 py-2 rounded-lg shadow-2xs transition">
+          <i data-lucide="github" class="w-4 h-4"></i>
+          <span>GitHub</span>
+        </a>
+        <a href="app.html" class="inline-flex items-center gap-2 text-xs sm:text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 active:scale-95 px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl shadow-md shadow-indigo-600/25 transition">
+          <span>Launch Studio</span>
+          <i data-lucide="arrow-right" class="w-4 h-4"></i>
+        </a>
       </div>
-      <div class="min-w-0">
-        <h1 class="text-xs sm:text-base font-bold text-slate-900 leading-none truncate flex items-center gap-1.5 sm:gap-2">
-          <span>Markdown to PDF</span>
-          <span class="text-[10px] sm:text-xs bg-indigo-50 text-indigo-700 font-medium px-1.5 py-0.5 rounded border border-indigo-200 shrink-0">GFM + LaTeX</span>
-        </h1>
-        <p class="hidden sm:block text-xs text-slate-500 mt-0.5 truncate">Real-time compilation & print-ready layout</p>
-      </div>
-    </div>
-
-    <!-- Quick Actions Toolbar -->
-    <div class="flex items-center gap-1.5 sm:gap-2 flex-wrap">
-      <!-- Templates Dropdown -->
-      <select id="templateSelect" class="text-xs bg-slate-50 border border-slate-300 hover:border-slate-400 text-slate-700 font-medium py-1.5 px-2 rounded-lg transition-colors cursor-pointer outline-none focus:ring-2 focus:ring-indigo-500 max-w-[125px] sm:max-w-[160px] truncate">
-        <option value="" disabled selected>Templates...</option>
-        <option value="report">Academic Report</option>
-        <option value="resume">Resume</option>
-        <option value="docs">Documentation</option>
-        <option value="cheatsheet">Cheat Sheet</option>
-      </select>
-
-      <button id="importBtn" title="Upload Markdown file" class="text-xs bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 font-medium py-1.5 px-2 sm:px-3 rounded-lg flex items-center gap-1 transition">
-        <i data-lucide="upload" class="w-3.5 h-3.5"></i>
-        <span class="hidden sm:inline">Import</span>
-      </button>
-      <input type="file" id="fileInput" accept=".md,.markdown,.txt" class="hidden" />
-
-      <button id="clearBtn" title="Clear Editor" class="text-xs text-slate-500 hover:text-red-600 hover:bg-red-50 p-1.5 rounded-lg transition">
-        <i data-lucide="trash-2" class="w-4 h-4"></i>
-      </button>
-
-      <div class="h-4 w-px bg-slate-300 mx-0.5 sm:mx-1"></div>
-
-      <!-- Native Print -->
-      <button id="printBtn" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-800 font-medium py-1.5 px-2 sm:px-3 rounded-lg flex items-center gap-1 transition">
-        <i data-lucide="printer" class="w-3.5 h-3.5"></i>
-        <span class="hidden md:inline">Print</span>
-      </button>
-
-      <!-- Download PDF Primary -->
-      <button id="downloadPdfBtn" class="text-xs bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white font-medium py-1.5 px-2.5 sm:px-3.5 rounded-lg flex items-center gap-1.5 shadow-sm transition">
-        <i data-lucide="download" class="w-3.5 h-3.5"></i>
-        <span id="downloadBtnText">Export PDF</span>
-      </button>
     </div>
   </header>
 
-  <!-- Workspace & Settings Secondary Bar -->
-  <div class="bg-slate-50 border-b border-slate-200 px-3 sm:px-4 py-1.5 sm:py-2 flex flex-wrap items-center justify-between gap-2 text-xs shrink-0 overflow-x-auto">
-    <!-- Responsive View Tab Mode for Mobile / Tablet -->
-    <div class="flex items-center bg-slate-200/80 p-0.5 rounded-lg lg:hidden" id="mobileTabGroup">
-      <button id="tabEditor" class="px-2.5 py-1 text-xs font-semibold rounded-md bg-white text-indigo-700 shadow-xs transition">Edit</button>
-      <button id="tabPreview" class="px-2.5 py-1 text-xs font-medium rounded-md text-slate-600 hover:text-slate-900 transition">Preview</button>
-      <button id="tabSplit" class="hidden sm:inline-block px-2.5 py-1 text-xs font-medium rounded-md text-slate-600 hover:text-slate-900 transition">Split</button>
-    </div>
-
-    <div class="flex items-center gap-2 sm:gap-3 flex-wrap">
-      <!-- Layout & Margins Controls -->
-      <div class="flex items-center gap-1">
-        <label for="themeSelect" class="hidden sm:inline text-slate-600 font-medium">Theme:</label>
-        <select id="themeSelect" class="bg-white border border-slate-300 rounded px-1.5 py-1 text-[11px] sm:text-xs focus:ring-1 focus:ring-indigo-500 outline-none">
-          <option value="theme-modern">Modern Clean</option>
-          <option value="theme-academic">Academic</option>
-          <option value="theme-minimal">Monospace</option>
-        </select>
+  <!-- Hero Section -->
+  <section class="relative pt-16 sm:pt-24 pb-20 overflow-hidden gradient-hero-bg">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
+      
+      <!-- Top Announcement Pill -->
+      <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-indigo-50 border border-indigo-200/80 text-indigo-700 text-xs sm:text-sm font-semibold mb-6 shadow-2xs">
+        <span class="flex h-2 w-2 rounded-full bg-indigo-600 animate-pulse"></span>
+        <span>Version 1.0 Live</span>
+        <span class="text-slate-300">•</span>
+        <span class="text-slate-600 font-normal">Zero Server Calls • 100% In-Browser</span>
       </div>
 
-      <div class="flex items-center gap-1">
-        <label for="pageSize" class="hidden sm:inline text-slate-600 font-medium">Size:</label>
-        <select id="pageSize" class="bg-white border border-slate-300 rounded px-1.5 py-1 text-[11px] sm:text-xs focus:ring-1 focus:ring-indigo-500 outline-none">
-          <option value="a4">A4</option>
-          <option value="letter">Letter</option>
-        </select>
+      <!-- Main Headline -->
+      <h1 class="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-slate-900 max-w-4xl mx-auto leading-[1.1]">
+        Transform Markdown into <span class="gradient-text">Publication-Ready</span> PDFs
+      </h1>
+
+      <!-- Subtitle -->
+      <p class="mt-6 text-base sm:text-lg lg:text-xl text-slate-600 max-w-2xl mx-auto font-normal leading-relaxed">
+        The distraction-free in-browser studio featuring GitHub Flavored Markdown, KaTeX LaTeX formulas, syntax highlighting, and physical sheet simulation.
+      </p>
+
+      <!-- CTA Buttons -->
+      <div class="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3.5 max-w-md mx-auto">
+        <a href="app.html" class="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 text-base font-bold text-white bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 active:scale-95 px-7 py-3.5 rounded-xl shadow-lg shadow-indigo-500/25 transition">
+          <span>Open Studio Workspace</span>
+          <i data-lucide="arrow-right" class="w-5 h-5"></i>
+        </a>
+        <a href="#playground" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 text-base font-semibold text-slate-700 hover:text-slate-900 bg-white hover:bg-slate-100 border border-slate-300 px-6 py-3.5 rounded-xl shadow-xs transition">
+          <i data-lucide="play" class="w-4 h-4 text-indigo-600"></i>
+          <span>Try Mini Demo</span>
+        </a>
       </div>
 
-      <div class="flex items-center gap-1">
-        <label for="marginSelect" class="hidden md:inline text-slate-600 font-medium">Margins:</label>
-        <select id="marginSelect" class="bg-white border border-slate-300 rounded px-1.5 py-1 text-[11px] sm:text-xs focus:ring-1 focus:ring-indigo-500 outline-none">
-          <option value="12">12mm</option>
-          <option value="20" selected>20mm</option>
-          <option value="28">28mm</option>
-        </select>
-      </div>
-
-      <div class="flex items-center gap-1">
-        <label for="fontSize" class="hidden md:inline text-slate-600 font-medium">Font:</label>
-        <select id="fontSize" class="bg-white border border-slate-300 rounded px-1.5 py-1 text-[11px] sm:text-xs focus:ring-1 focus:ring-indigo-500 outline-none">
-          <option value="13px">13px</option>
-          <option value="15px" selected>15px</option>
-          <option value="17px">17px</option>
-        </select>
-      </div>
-    </div>
-
-    <!-- Stats & Status Indicator -->
-    <div class="flex items-center gap-2 sm:gap-3 text-slate-500 text-[11px] sm:text-xs ml-auto">
-      <span id="charCount" class="hidden sm:inline">0 chars</span>
-      <span class="hidden sm:inline">•</span>
-      <span id="wordCount">0 words</span>
-      <span>•</span>
-      <span id="statusIndicator" class="inline-flex items-center gap-1 text-emerald-600 font-medium">
-        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Synced
-      </span>
-    </div>
-  </div>
-
-  <!-- Main Content Area -->
-  <main class="flex-1 flex flex-col lg:flex-row overflow-hidden relative" id="mainWorkspace">
-    
-    <!-- Left Pane: Editor -->
-    <section id="paneEditor" class="w-full lg:w-1/2 flex flex-col border-b lg:border-b-0 lg:border-r border-slate-200 bg-white h-full">
-      <!-- Editor Header Toolbar -->
-      <div class="bg-slate-50/80 border-b border-slate-200 px-3 py-1.5 flex items-center justify-between text-xs text-slate-600 shrink-0 overflow-x-auto">
-        <span class="font-medium flex items-center gap-1.5 shrink-0 pr-2">
-          <i data-lucide="edit-3" class="w-3.5 h-3.5 text-slate-500"></i>
-          <span class="hidden sm:inline">Markdown Source</span>
-          <span class="sm:hidden">Source</span>
-        </span>
-        <div class="flex items-center gap-1 shrink-0">
-          <!-- Permanent Fix Button -->
-          <button id="btnCleanFormat" title="Format & fix code blocks" class="p-1 px-2 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white font-medium rounded-md flex items-center gap-1 shadow-xs transition text-[11px]">
-            <i data-lucide="sparkles" class="w-3 h-3"></i>
-            <span>Format & Fix</span>
-          </button>
-          <div class="h-3 w-px bg-slate-300 mx-1"></div>
-          <button id="btnBold" title="Bold (**text**)" class="p-1 hover:bg-slate-200 rounded text-slate-700"><i data-lucide="bold" class="w-3.5 h-3.5"></i></button>
-          <button id="btnItalic" title="Italic (*text*)" class="p-1 hover:bg-slate-200 rounded text-slate-700"><i data-lucide="italic" class="w-3.5 h-3.5"></i></button>
-          <button id="btnHeading" title="Heading" class="p-1 hover:bg-slate-200 rounded text-slate-700"><i data-lucide="heading" class="w-3.5 h-3.5"></i></button>
-          <button id="btnLink" title="Link" class="p-1 hover:bg-slate-200 rounded text-slate-700"><i data-lucide="link" class="w-3.5 h-3.5"></i></button>
-          <button id="btnList" title="Bullet List" class="p-1 hover:bg-slate-200 rounded text-slate-700"><i data-lucide="list" class="w-3.5 h-3.5"></i></button>
-          <button id="btnCode" title="Code Block" class="p-1 hover:bg-slate-200 rounded text-slate-700"><i data-lucide="code" class="w-3.5 h-3.5"></i></button>
-          <button id="btnPageBreak" title="Insert Page Break" class="p-1 hover:bg-slate-200 rounded text-slate-700 font-mono text-[10px] px-1 border border-slate-300">Break</button>
+      <!-- Key Trust Features -->
+      <div class="mt-10 flex flex-wrap items-center justify-center gap-6 sm:gap-10 text-xs sm:text-sm font-medium text-slate-500">
+        <div class="flex items-center gap-2">
+          <i data-lucide="shield-check" class="w-4 h-4 text-emerald-600"></i>
+          <span>100% Private (No Cloud Uploads)</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <i data-lucide="sigma" class="w-4 h-4 text-indigo-600"></i>
+          <span>Full LaTeX Math (KaTeX)</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <i data-lucide="printer" class="w-4 h-4 text-violet-600"></i>
+          <span>A4 & US Letter Paper Scaling</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <i data-lucide="sparkles" class="w-4 h-4 text-amber-500"></i>
+          <span>Auto-Format Engine</span>
         </div>
       </div>
 
-      <!-- Textarea Input Area -->
-      <div class="flex-1 relative overflow-hidden">
-        <textarea
-          id="markdownInput"
-          spellcheck="false"
-          placeholder="Type or paste your Markdown here... supports GFM tables, math syntax $$...$$, and code blocks."
-          class="w-full h-full p-3 sm:p-4 font-mono text-xs sm:text-sm text-slate-800 bg-white border-0 outline-none resize-none leading-relaxed selection:bg-indigo-100"
-        ></textarea>
-      </div>
-    </section>
+      <!-- Hero Visual: Mockup Studio Window -->
+      <div class="mt-14 max-w-5xl mx-auto rounded-2xl bg-white border border-slate-200/90 shadow-2xl overflow-hidden glow-shadow">
+        <!-- Mockup Header -->
+        <div class="bg-slate-100/90 border-b border-slate-200 px-4 py-3 flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <div class="w-3 h-3 rounded-full bg-rose-400"></div>
+            <div class="w-3 h-3 rounded-full bg-amber-400"></div>
+            <div class="w-3 h-3 rounded-full bg-emerald-400"></div>
+            <span class="ml-2 text-xs font-mono font-medium text-slate-500">markdown-to-pdf-studio // live-workspace</span>
+          </div>
+          <div class="flex items-center gap-2 text-xs font-medium text-slate-500">
+            <span class="inline-flex items-center gap-1 text-emerald-600 font-semibold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 text-[11px]">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Synced 1:1
+            </span>
+          </div>
+        </div>
 
-    <!-- Right Pane: Live Document Preview -->
-    <section id="panePreview" class="w-full lg:w-1/2 hidden lg:flex flex-col bg-slate-200/80 overflow-hidden h-full">
-      <!-- Preview Header Toolbar -->
-      <div class="bg-slate-100/90 border-b border-slate-300 px-3 py-1.5 flex items-center justify-between text-xs text-slate-600 shrink-0">
-        <span class="font-medium flex items-center gap-1.5">
-          <i data-lucide="eye" class="w-3.5 h-3.5 text-slate-500"></i>
-          Live PDF Preview
-        </span>
-        <div class="text-[11px] text-slate-500 flex items-center gap-2">
-          <span class="hidden sm:inline">Scaled Page</span>
-          <button id="zoomReset" title="Reset Zoom" class="hover:text-slate-800 underline">Fit Top</button>
+        <!-- Mockup Split Editor / Preview Area -->
+        <div class="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-slate-200 text-left bg-slate-50/50">
+          <!-- Left: Code Editor Mockup -->
+          <div class="p-5 font-mono text-xs leading-relaxed text-slate-700 bg-white overflow-hidden">
+            <div class="text-slate-400 text-[11px] uppercase font-bold tracking-wider mb-2 flex items-center gap-1.5">
+              <i data-lucide="code-2" class="w-3.5 h-3.5"></i> Source Editor
+            </div>
+            <p class="text-indigo-600 font-bold"># Deep Learning Survey</p>
+            <p class="text-slate-500">**Authors:** Alex Rivera, Dr. Thorne</p>
+            <p class="text-slate-400 mt-2">---</p>
+            <p class="mt-2 text-slate-800 font-semibold">## Attention Mechanism</p>
+            <p class="text-slate-600">The scaled dot-product attention:</p>
+            <p class="bg-slate-100 p-2 rounded text-indigo-700 mt-2 border border-slate-200">
+              $$ \text{Attention}(Q,K,V) = \text{softmax}\left(\frac{QK^T}{\sqrt{d_k}}\right)V $$
+            </p>
+            <p class="text-slate-400 mt-3">```python</p>
+            <p class="text-slate-800">scores = torch.matmul(q, k.transpose(-2, -1)) * scale</p>
+            <p class="text-slate-800">weights = torch.softmax(scores, dim=-1)</p>
+            <p class="text-slate-400">```</p>
+          </div>
+
+          <!-- Right: Rendered Sheet Mockup -->
+          <div class="p-6 bg-slate-100/70 flex flex-col justify-center">
+            <div class="text-slate-400 text-[11px] uppercase font-bold tracking-wider mb-2 flex items-center gap-1.5">
+              <i data-lucide="eye" class="w-3.5 h-3.5"></i> A4 Physical Sheet Preview
+            </div>
+            <div class="bg-white p-6 rounded-lg shadow-md border border-slate-200 space-y-3">
+              <h2 class="text-lg font-bold text-slate-900 border-b pb-1">Deep Learning Survey</h2>
+              <p class="text-xs text-slate-500"><strong>Authors:</strong> Alex Rivera, Dr. Thorne</p>
+              <h3 class="text-sm font-semibold text-slate-800 pt-1">Attention Mechanism</h3>
+              <div class="bg-indigo-50/50 p-2 rounded border border-indigo-100 text-center font-serif text-sm text-indigo-900 font-medium">
+                Attention(Q,K,V) = softmax( QK<sup>T</sup> / &radic;d<sub>k</sub> ) V
+              </div>
+              <div class="bg-slate-900 text-emerald-400 p-2.5 rounded text-[11px] font-mono leading-tight shadow-inner">
+                <span class="text-slate-400"># PyTorch Implementation</span><br>
+                scores = torch.matmul(q, k.t()) * scale<br>
+                weights = torch.softmax(scores, dim=-1)
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Mockup Bottom Bar -->
+        <div class="bg-white border-t border-slate-200 px-4 py-2.5 flex items-center justify-between text-xs text-slate-500">
+          <span>Theme: <strong class="text-slate-700">Modern Clean</strong> • Paper: <strong class="text-slate-700">A4 (20mm Margins)</strong></span>
+          <a href="app.html" class="font-bold text-indigo-600 hover:text-indigo-800 flex items-center gap-1">
+            Open Full Interactive Studio <i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i>
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Interactive Live Playground Section -->
+  <section id="playground" class="py-16 sm:py-24 bg-white border-y border-slate-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center max-w-3xl mx-auto mb-12">
+        <span class="text-xs font-bold uppercase tracking-wider text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full border border-indigo-200">Interactive Preview</span>
+        <h2 class="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight mt-3">
+          Try it right here in your browser
+        </h2>
+        <p class="text-slate-600 mt-2 text-base">
+          Type Markdown, LaTeX math ($...$ or $$...$$), or click any quick sample to test the instant rendering engine.
+        </p>
+      </div>
+
+      <!-- Playground Component -->
+      <div class="max-w-5xl mx-auto bg-slate-50 rounded-2xl border border-slate-200 shadow-xl overflow-hidden">
+        <!-- Playground Header Controls -->
+        <div class="bg-slate-100 border-b border-slate-200 px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-bold text-slate-700 uppercase tracking-wider">Quick Presets:</span>
+            <button id="presetMath" class="text-xs font-medium bg-white hover:bg-indigo-50 text-slate-700 hover:text-indigo-700 border border-slate-300 px-2.5 py-1 rounded-md transition shadow-2xs">LaTeX Formula</button>
+            <button id="presetCode" class="text-xs font-medium bg-white hover:bg-indigo-50 text-slate-700 hover:text-indigo-700 border border-slate-300 px-2.5 py-1 rounded-md transition shadow-2xs">Code Block</button>
+            <button id="presetTable" class="text-xs font-medium bg-white hover:bg-indigo-50 text-slate-700 hover:text-indigo-700 border border-slate-300 px-2.5 py-1 rounded-md transition shadow-2xs">GFM Table</button>
+          </div>
+          <a href="app.html" class="inline-flex items-center gap-1.5 text-xs font-bold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 px-3 py-1 rounded-md transition">
+            <span>Open In Full Studio</span>
+            <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+          </a>
+        </div>
+
+        <!-- Playground Editor + Preview -->
+        <div class="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-slate-200 min-h-[380px]">
+          <!-- Input Area -->
+          <div class="flex flex-col bg-white">
+            <div class="bg-slate-50/90 border-b border-slate-200 px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider text-slate-500 flex items-center justify-between">
+              <span>Markdown Source</span>
+              <span id="playgroundCharCount" class="font-normal font-mono">0 chars</span>
+            </div>
+            <textarea
+              id="playgroundInput"
+              spellcheck="false"
+              class="w-full flex-1 p-4 font-mono text-xs sm:text-sm text-slate-800 bg-white border-0 outline-none resize-none leading-relaxed selection:bg-indigo-100"
+              placeholder="Type your markdown and math here..."
+            ></textarea>
+          </div>
+
+          <!-- Preview Area -->
+          <div class="flex flex-col bg-slate-50">
+            <div class="bg-slate-100/90 border-b border-slate-200 px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider text-slate-500 flex items-center justify-between">
+              <span>Live Compiled Output</span>
+              <span class="text-emerald-600 font-semibold flex items-center gap-1">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Live
+              </span>
+            </div>
+            <div id="playgroundOutput" class="flex-1 p-5 overflow-auto text-slate-800 prose prose-slate prose-sm max-w-none">
+              <!-- Render output target -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Key Features Grid -->
+  <section id="features" class="py-20 sm:py-28 bg-slate-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <div class="text-center max-w-3xl mx-auto mb-16">
+        <span class="text-xs font-bold uppercase tracking-wider text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full border border-indigo-200">Engineered for Quality</span>
+        <h2 class="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight mt-3">
+          Everything You Need for Beautiful Documents
+        </h2>
+        <p class="text-slate-600 mt-2 text-base sm:text-lg">
+          No complex LaTeX toolchains, no bloated desktop software. Instant compiled PDFs right inside your web browser.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        
+        <!-- Feature 1 -->
+        <div class="bg-white rounded-2xl p-7 border border-slate-200 hover:border-indigo-300 hover:shadow-lg transition-all group">
+          <div class="w-12 h-12 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center mb-5 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
+            <i data-lucide="sigma" class="w-6 h-6"></i>
+          </div>
+          <h3 class="text-lg font-bold text-slate-900 mb-2">KaTeX Mathematical Typesetting</h3>
+          <p class="text-sm text-slate-600 leading-relaxed">
+            Full LaTeX math rendering for inline formulas like <code class="text-xs bg-slate-100 px-1 py-0.5 rounded font-mono text-indigo-700">$E=mc^2$</code> and complex display matrices or calculus integrals.
+          </p>
+        </div>
+
+        <!-- Feature 2 -->
+        <div class="bg-white rounded-2xl p-7 border border-slate-200 hover:border-indigo-300 hover:shadow-lg transition-all group">
+          <div class="w-12 h-12 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center mb-5 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
+            <i data-lucide="code-2" class="w-6 h-6"></i>
+          </div>
+          <h3 class="text-lg font-bold text-slate-900 mb-2">Multi-Language Code Highlighting</h3>
+          <p class="text-sm text-slate-600 leading-relaxed">
+            Highlighted code blocks for TypeScript, Python, Bash, HTML, SCSS, JSON, and auto-detection, enclosed in sleek modern frames with language indicators.
+          </p>
+        </div>
+
+        <!-- Feature 3 -->
+        <div class="bg-white rounded-2xl p-7 border border-slate-200 hover:border-indigo-300 hover:shadow-lg transition-all group">
+          <div class="w-12 h-12 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center mb-5 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
+            <i data-lucide="layers" class="w-6 h-6"></i>
+          </div>
+          <h3 class="text-lg font-bold text-slate-900 mb-2">Physical Sheet Simulation</h3>
+          <p class="text-sm text-slate-600 leading-relaxed">
+            Realistic physical sheet canvas on screen with true A4 (210mm &times; 297mm) and US Letter dimensions, customizable margins (12mm, 20mm, 28mm), and font scaling.
+          </p>
+        </div>
+
+        <!-- Feature 4 -->
+        <div class="bg-white rounded-2xl p-7 border border-slate-200 hover:border-indigo-300 hover:shadow-lg transition-all group">
+          <div class="w-12 h-12 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center mb-5 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
+            <i data-lucide="refresh-cw" class="w-6 h-6"></i>
+          </div>
+          <h3 class="text-lg font-bold text-slate-900 mb-2">1:1 Bi-Directional Sync Scroll</h3>
+          <p class="text-sm text-slate-600 leading-relaxed">
+            Scroll synchronization anchors map source lines to rendered DOM nodes, ensuring you never lose your position when writing long academic or technical documents.
+          </p>
+        </div>
+
+        <!-- Feature 5 -->
+        <div class="bg-white rounded-2xl p-7 border border-slate-200 hover:border-indigo-300 hover:shadow-lg transition-all group">
+          <div class="w-12 h-12 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center mb-5 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
+            <i data-lucide="wand-2" class="w-6 h-6"></i>
+          </div>
+          <h3 class="text-lg font-bold text-slate-900 mb-2">Smart Auto-Repair Engine</h3>
+          <p class="text-sm text-slate-600 leading-relaxed">
+            Built-in preprocessor detects and repairs unfenced code, escapes loose HTML tags, fixes numbered question lists, and normalizes ASCII dividers with one click.
+          </p>
+        </div>
+
+        <!-- Feature 6 -->
+        <div class="bg-white rounded-2xl p-7 border border-slate-200 hover:border-indigo-300 hover:shadow-lg transition-all group">
+          <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center mb-5 group-hover:bg-emerald-600 group-hover:text-white transition-colors">
+            <i data-lucide="lock" class="w-6 h-6"></i>
+          </div>
+          <h3 class="text-lg font-bold text-slate-900 mb-2">100% Client-Side Privacy</h3>
+          <p class="text-sm text-slate-600 leading-relaxed">
+            Zero telemetry, zero analytics, and zero cloud uploads. Your confidential drafts, proprietary code, and notes never leave your personal computer memory.
+          </p>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- Pre-Built Templates Showcase -->
+  <section id="templates" class="py-20 sm:py-28 bg-white border-y border-slate-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <div class="text-center max-w-3xl mx-auto mb-16">
+        <span class="text-xs font-bold uppercase tracking-wider text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full border border-indigo-200">Instant Jumpstart</span>
+        <h2 class="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight mt-3">
+          Pre-Loaded Professional Templates
+        </h2>
+        <p class="text-slate-600 mt-2 text-base sm:text-lg">
+          Click any template to load it directly into the Studio workspace.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        
+        <!-- Template 1: Report -->
+        <div class="bg-slate-50 rounded-2xl p-6 border border-slate-200 hover:border-indigo-400 hover:shadow-md transition flex flex-col justify-between">
+          <div>
+            <div class="w-10 h-10 rounded-lg bg-indigo-100 text-indigo-700 flex items-center justify-center mb-4">
+              <i data-lucide="graduation-cap" class="w-5 h-5"></i>
+            </div>
+            <h3 class="font-bold text-slate-900 text-base mb-1">Academic Survey</h3>
+            <p class="text-xs text-slate-600 mb-4 leading-relaxed">
+              Research survey with abstract, LaTeX attention formulas, benchmark matrix tables, and PyTorch projection code.
+            </p>
+          </div>
+          <a href="app.html?template=report" class="inline-flex items-center justify-center gap-1.5 text-xs font-bold text-indigo-600 hover:text-indigo-800 bg-white hover:bg-indigo-50 border border-slate-300 hover:border-indigo-300 py-2 rounded-lg transition">
+            <span>Open Template</span>
+            <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+          </a>
+        </div>
+
+        <!-- Template 2: Resume -->
+        <div class="bg-slate-50 rounded-2xl p-6 border border-slate-200 hover:border-indigo-400 hover:shadow-md transition flex flex-col justify-between">
+          <div>
+            <div class="w-10 h-10 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center mb-4">
+              <i data-lucide="briefcase" class="w-5 h-5"></i>
+            </div>
+            <h3 class="font-bold text-slate-900 text-base mb-1">Executive Resume</h3>
+            <p class="text-xs text-slate-600 mb-4 leading-relaxed">
+              Clean single-page CV template highlighting core competencies, technical leadership, and career milestones.
+            </p>
+          </div>
+          <a href="app.html?template=resume" class="inline-flex items-center justify-center gap-1.5 text-xs font-bold text-indigo-600 hover:text-indigo-800 bg-white hover:bg-indigo-50 border border-slate-300 hover:border-indigo-300 py-2 rounded-lg transition">
+            <span>Open Template</span>
+            <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+          </a>
+        </div>
+
+        <!-- Template 3: Docs -->
+        <div class="bg-slate-50 rounded-2xl p-6 border border-slate-200 hover:border-indigo-400 hover:shadow-md transition flex flex-col justify-between">
+          <div>
+            <div class="w-10 h-10 rounded-lg bg-violet-100 text-violet-700 flex items-center justify-center mb-4">
+              <i data-lucide="book-open" class="w-5 h-5"></i>
+            </div>
+            <h3 class="font-bold text-slate-900 text-base mb-1">API Developer Docs</h3>
+            <p class="text-xs text-slate-600 mb-4 leading-relaxed">
+              Structured REST API reference with authentication headers, status code tables, and formatted JSON response bodies.
+            </p>
+          </div>
+          <a href="app.html?template=docs" class="inline-flex items-center justify-center gap-1.5 text-xs font-bold text-indigo-600 hover:text-indigo-800 bg-white hover:bg-indigo-50 border border-slate-300 hover:border-indigo-300 py-2 rounded-lg transition">
+            <span>Open Template</span>
+            <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+          </a>
+        </div>
+
+        <!-- Template 4: Cheatsheet -->
+        <div class="bg-slate-50 rounded-2xl p-6 border border-slate-200 hover:border-indigo-400 hover:shadow-md transition flex flex-col justify-between">
+          <div>
+            <div class="w-10 h-10 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center mb-4">
+              <i data-lucide="list-checks" class="w-5 h-5"></i>
+            </div>
+            <h3 class="font-bold text-slate-900 text-base mb-1">Markdown & Math Cheat Sheet</h3>
+            <p class="text-xs text-slate-600 mb-4 leading-relaxed">
+              Quick syntax guide for typography, task lists, GFM table column alignment, and Gaussian display integrals.
+            </p>
+          </div>
+          <a href="app.html?template=cheatsheet" class="inline-flex items-center justify-center gap-1.5 text-xs font-bold text-indigo-600 hover:text-indigo-800 bg-white hover:bg-indigo-50 border border-slate-300 hover:border-indigo-300 py-2 rounded-lg transition">
+            <span>Open Template</span>
+            <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+          </a>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- How It Works Section -->
+  <section id="how-it-works" class="py-20 sm:py-28 bg-slate-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <div class="text-center max-w-3xl mx-auto mb-16">
+        <span class="text-xs font-bold uppercase tracking-wider text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full border border-indigo-200">Streamlined Workflow</span>
+        <h2 class="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight mt-3">
+          How It Works in 3 Simple Steps
+        </h2>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-center max-w-5xl mx-auto">
+        <!-- Step 1 -->
+        <div class="bg-white p-8 rounded-2xl border border-slate-200 shadow-xs relative">
+          <div class="w-12 h-12 mx-auto rounded-full bg-indigo-600 text-white font-extrabold text-lg flex items-center justify-center mb-5 shadow-md shadow-indigo-600/30">
+            1
+          </div>
+          <h3 class="text-lg font-bold text-slate-900 mb-2">Write or Import</h3>
+          <p class="text-sm text-slate-600 leading-relaxed">
+            Paste your raw notes, start from scratch, or import any existing <code class="text-xs bg-slate-100 px-1 py-0.5 rounded font-mono">.md</code> or <code class="text-xs bg-slate-100 px-1 py-0.5 rounded font-mono">.txt</code> file directly from disk.
+          </p>
+        </div>
+
+        <!-- Step 2 -->
+        <div class="bg-white p-8 rounded-2xl border border-slate-200 shadow-xs relative">
+          <div class="w-12 h-12 mx-auto rounded-full bg-indigo-600 text-white font-extrabold text-lg flex items-center justify-center mb-5 shadow-md shadow-indigo-600/30">
+            2
+          </div>
+          <h3 class="text-lg font-bold text-slate-900 mb-2">Style & Format</h3>
+          <p class="text-sm text-slate-600 leading-relaxed">
+            Pick from Modern, Academic, or Monospace themes. Select A4 or Letter paper format, tune margin widths, and use page breaks.
+          </p>
+        </div>
+
+        <!-- Step 3 -->
+        <div class="bg-white p-8 rounded-2xl border border-slate-200 shadow-xs relative">
+          <div class="w-12 h-12 mx-auto rounded-full bg-indigo-600 text-white font-extrabold text-lg flex items-center justify-center mb-5 shadow-md shadow-indigo-600/30">
+            3
+          </div>
+          <h3 class="text-lg font-bold text-slate-900 mb-2">Export Vector PDF</h3>
+          <p class="text-sm text-slate-600 leading-relaxed">
+            Generate crisp, high-resolution vector PDFs with one click, or send directly to your physical printer with browser print optimization.
+          </p>
         </div>
       </div>
 
-      <!-- Document Page Wrapper (Scrollable canvas) -->
-      <div id="previewContainer" class="flex-1 overflow-auto p-2 sm:p-4 md:p-6 flex justify-center items-start">
-        <!-- Physical Page Sheet Simulation -->
-        <article
-          id="preview-render-area"
-          class="paper-sheet bg-white min-h-[297mm] transition-all duration-150 relative"
-          style="padding: 20mm; font-size: 15px;"
-        >
-          <!-- Dynamic Markdown Render target -->
-          <div id="renderTarget" class="pdf-content theme-modern"></div>
-        </article>
-      </div>
-    </section>
-  </main>
+    </div>
+  </section>
 
+  <!-- FAQ Section -->
+  <section id="faq" class="py-20 sm:py-28 bg-white border-t border-slate-200">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <div class="text-center mb-16">
+        <span class="text-xs font-bold uppercase tracking-wider text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full border border-indigo-200">Got Questions?</span>
+        <h2 class="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight mt-3">
+          Frequently Asked Questions
+        </h2>
+      </div>
+
+      <div class="space-y-4">
+        <!-- FAQ 1 -->
+        <details class="group bg-slate-50 border border-slate-200 rounded-xl p-5 [&_summary::-webkit-details-marker]:hidden cursor-pointer">
+          <summary class="flex items-center justify-between font-bold text-slate-900 text-base">
+            <span>Is my document content stored or sent to any server?</span>
+            <span class="ml-4 shrink-0 text-slate-500 group-open:rotate-180 transition-transform">
+              <i data-lucide="chevron-down" class="w-5 h-5"></i>
+            </span>
+          </summary>
+          <p class="mt-3 text-sm text-slate-600 leading-relaxed">
+            <strong>No, absolutely not.</strong> Markdown to PDF Studio runs 100% inside your client web browser. All parsing, syntax highlighting, LaTeX equation rendering, and PDF compilation take place directly on your machine. No text is ever transmitted over the network.
+          </p>
+        </details>
+
+        <!-- FAQ 2 -->
+        <details class="group bg-slate-50 border border-slate-200 rounded-xl p-5 [&_summary::-webkit-details-marker]:hidden cursor-pointer">
+          <summary class="flex items-center justify-between font-bold text-slate-900 text-base">
+            <span>How do I force a page break in my PDF?</span>
+            <span class="ml-4 shrink-0 text-slate-500 group-open:rotate-180 transition-transform">
+              <i data-lucide="chevron-down" class="w-5 h-5"></i>
+            </span>
+          </summary>
+          <p class="mt-3 text-sm text-slate-600 leading-relaxed">
+            Simply insert the special HTML comment <code class="text-xs bg-slate-200 px-1 py-0.5 rounded font-mono">&lt;!-- page-break --&gt;</code> wherever you want a clean page split, or click the <strong>Break</strong> button on the editor toolbar. The PDF engine will immediately start a new physical page.
+          </p>
+        </details>
+
+        <!-- FAQ 3 -->
+        <details class="group bg-slate-50 border border-slate-200 rounded-xl p-5 [&_summary::-webkit-details-marker]:hidden cursor-pointer">
+          <summary class="flex items-center justify-between font-bold text-slate-900 text-base">
+            <span>Can I work completely offline?</span>
+            <span class="ml-4 shrink-0 text-slate-500 group-open:rotate-180 transition-transform">
+              <i data-lucide="chevron-down" class="w-5 h-5"></i>
+            </span>
+          </summary>
+          <p class="mt-3 text-sm text-slate-600 leading-relaxed">
+            Yes! Once the webpage assets are cached by your browser, or if you clone the repository locally, the application requires zero active internet connection to edit and export PDFs.
+          </p>
+        </details>
+
+        <!-- FAQ 4 -->
+        <details class="group bg-slate-50 border border-slate-200 rounded-xl p-5 [&_summary::-webkit-details-marker]:hidden cursor-pointer">
+          <summary class="flex items-center justify-between font-bold text-slate-900 text-base">
+            <span>Is this open source and free for commercial use?</span>
+            <span class="ml-4 shrink-0 text-slate-500 group-open:rotate-180 transition-transform">
+              <i data-lucide="chevron-down" class="w-5 h-5"></i>
+            </span>
+          </summary>
+          <p class="mt-3 text-sm text-slate-600 leading-relaxed">
+            Yes, this project is licensed under the permissive <strong>MIT License</strong>. You can use it freely for personal projects, academic reports, corporate documentation, or commercial work.
+          </p>
+        </details>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Bottom CTA Banner -->
+  <section class="py-16 sm:py-24 bg-gradient-to-tr from-indigo-900 via-indigo-800 to-slate-900 text-white text-center relative overflow-hidden">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+      <h2 class="text-3xl sm:text-5xl font-extrabold tracking-tight">
+        Ready to Create Publication-Quality PDFs?
+      </h2>
+      <p class="mt-4 text-base sm:text-lg text-indigo-200 max-w-xl mx-auto font-normal">
+        No signup required. Open the studio right now and start typing or pasting your Markdown.
+      </p>
+      <div class="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
+        <a href="app.html" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 text-base font-bold text-indigo-900 bg-white hover:bg-indigo-50 active:scale-95 px-8 py-4 rounded-xl shadow-xl transition">
+          <span>Launch Studio Workspace</span>
+          <i data-lucide="arrow-right" class="w-5 h-5 text-indigo-600"></i>
+        </a>
+        <a href="https://github.com/manthanank/markdown-to-pdf-converter" target="_blank" rel="noopener noreferrer" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 text-base font-semibold text-white hover:text-indigo-200 bg-white/10 hover:bg-white/20 border border-white/20 px-7 py-4 rounded-xl transition">
+          <i data-lucide="github" class="w-5 h-5"></i>
+          <span>View on GitHub</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="bg-slate-900 text-slate-400 py-12 border-t border-slate-800 text-xs sm:text-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-6">
+      
+      <div class="flex items-center gap-3">
+        <div class="w-8 h-8 rounded-lg bg-indigo-600 text-white flex items-center justify-center font-bold">
+          <i data-lucide="file-text" class="w-4 h-4"></i>
+        </div>
+        <div>
+          <span class="font-bold text-white text-sm">Markdown to PDF Studio</span>
+          <p class="text-slate-500 text-xs">Open-source client-side document studio</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-6 text-slate-400 font-medium">
+        <a href="app.html" class="hover:text-white transition">Studio Workspace</a>
+        <a href="#features" class="hover:text-white transition">Features</a>
+        <a href="#templates" class="hover:text-white transition">Templates</a>
+        <a href="https://github.com/manthanank/markdown-to-pdf-converter" target="_blank" rel="noopener noreferrer" class="hover:text-white transition flex items-center gap-1">
+          <i data-lucide="github" class="w-4 h-4"></i> GitHub
+        </a>
+      </div>
+
+      <div class="text-slate-500 text-center md:text-right">
+        <p>Released under the <a href="LICENSE" class="underline hover:text-slate-300">MIT License</a>.</p>
+        <p class="mt-0.5">&copy; 2026 Manthan Ankolekar. All rights reserved.</p>
+      </div>
+
+    </div>
+  </footer>
+
+  <!-- Interactive Mini-Playground Script -->
   <script>
-    // Templates Database (Using string arrays joined by newline to completely avoid backtick syntax collisions)
-    const FENCE = '```';
-    const TEMPLATES = {
-      report: [
-        '# Deep Learning in Natural Language Understanding: A Survey',
-        '**Authors:** Alex Rivera, Dr. Elena Thorne  ',
-        '*Department of Computer Science, Stanford University*  ',
-        '**Date:** November 2026',
+    // Initialize Lucide icons
+    lucide.createIcons();
+
+    // Playground functionality
+    const playgroundInput = document.getElementById('playgroundInput');
+    const playgroundOutput = document.getElementById('playgroundOutput');
+    const playgroundCharCount = document.getElementById('playgroundCharCount');
+
+    const SAMPLES = {
+      math: [
+        '# Gaussian Integral & Physics Formula',
         '',
-        '---',
+        'The continuous probability density normal distribution function:',
         '',
-        '### Abstract',
-        'This document explores the development of transformer models and their parameter efficiency in contextual language modeling tasks. We discuss attention mechanisms, quantization strategies, and emergent reasoning benchmarks.',
+        '$$ f(x) = \\frac{1}{\\sigma \\sqrt{2\\pi}} e^{-\\frac{1}{2}\\left(\\frac{x-\\mu}{\\sigma}\\right)^2} $$',
         '',
-        '## 1. Introduction',
-        'Modern natural language systems depend heavily on cross-attention formulations. The core transformer transformation is written as:',
-        '',
-        '$$ \\text{Attention}(Q, K, V) = \\text{softmax}\\left(\\frac{QK^T}{\\sqrt{d_k}}\\right)V $$',
-        '',
-        'Where:',
-        '* $Q$ represents the query vector',
-        '* $K$ represents the key sequence',
-        '* $V$ holds semantic value embeddings',
-        '* $d_k$ is the dimensionality factor preventing gradient vanishing',
-        '',
-        '## 2. Benchmark Performance Matrix',
-        '',
-        '| Model Architecture | Parameters | MMLU Score | Inference Latency |',
-        '| :--- | :--- | :--- | :--- |',
-        '| **Model Alpha-7B** | 7.2B | 74.5% | 18 ms/tok |',
-        '| **Model Beta-13B** | 13.0B | 81.2% | 34 ms/tok |',
-        '| **Model Delta-70B** | 70.4B | 88.9% | 110 ms/tok |',
-        '',
-        '<!-- page-break -->',
-        '',
-        '## 3. Implementation Blueprint',
-        'A minimal attention projection block in Python:',
-        '',
-        FENCE + 'python',
-        'import torch',
-        'import torch.nn as nn',
-        'import math',
-        '',
-        'class ScaledDotProductAttention(nn.Module):',
-        '    def __init__(self, d_k: int):',
-        '        super().__init__()',
-        '        self.scale = 1.0 / math.sqrt(d_k)',
-        '        self.softmax = nn.Softmax(dim=-1)',
-        '',
-        '    def forward(self, q, k, v, mask=None):',
-        '        scores = torch.matmul(q, k.transpose(-2, -1)) * self.scale',
-        '        if mask is not None:',
-        '            scores = scores.masked_fill(mask == 0, -1e9)',
-        '        weights = self.softmax(scores)',
-        '        return torch.matmul(weights, v), weights',
-        FENCE,
-        '',
-        '> *"Attention is not merely a weight assignment; it acts as a dynamic routing channel across heterogeneous cognitive spaces."*',
-        '',
-        '## 4. Conclusion',
-        'Parameter-efficient fine-tuning (PEFT) and structured pruning will dominate future edge deployment paradigms.'
+        'Euler\'s identity connecting five fundamental constants: $e^{i\\pi} + 1 = 0$.'
       ].join('\n'),
 
-      resume: [
-        '# Sarah Jenkins',
-        '**Senior Full-Stack & Systems Engineer**  ',
-        '📧 sarah.jenkins@example.com • 🌐 github.com/s-jenkins • 📍 San Francisco, CA',
+      code: [
+        '# TypeScript Data Pipeline',
         '',
-        '---',
-        '',
-        '### Executive Summary',
-        'Full-stack software architect with 8+ years building enterprise distributed systems, high-throughput streaming pipelines, and clean user experiences. Proven track record leading multi-disciplinary engineering squads.',
-        '',
-        '---',
-        '',
-        '### Core Competencies',
-        '* **Languages & Frameworks:** TypeScript, Go, Python, React, Next.js, Node.js, GraphQL',
-        '* **Cloud & Infrastructure:** AWS (ECS, Lambda, RDS), Kubernetes, Terraform, Docker',
-        '* **Databases & Caching:** PostgreSQL, Redis, ClickHouse, Apache Kafka',
-        '',
-        '---',
-        '',
-        '### Professional Experience',
-        '',
-        '#### **Staff Infrastructure Engineer** | *CloudScale Dynamics*',
-        '*2022 – Present | San Francisco, CA*',
-        '* Architected distributed event stream that ingested **2.4M events/sec**, reducing compute infrastructure costs by 34%.',
-        '* Led migration from legacy monolith to decoupled Go microservices with zero downtime for 4M active users.',
-        '* Mentored 12 mid-level and junior engineers across two product squads.',
-        '',
-        '#### **Senior Software Engineer** | *Vertex Data Labs*',
-        '*2019 – 2022 | Austin, TX*',
-        '* Built interactive real-time data visualizers in React and WebGL used by Fortune 500 analytics teams.',
-        '* Reduced median API latency from 240ms to 45ms via aggressive Redis tiered caching strategies.',
-        '',
-        '---',
-        '',
-        '### Education & Certifications',
-        '* **B.S. in Computer Science** — University of California, Berkeley (2015 – 2019)',
-        '* **AWS Certified Solutions Architect – Professional** (2024)'
-      ].join('\n'),
-
-      docs: [
-        '# API Client SDK Reference (v3.4.0)',
-        '',
-        'Welcome to the official developer documentation for the **Nova Distributed Engine**.',
-        '',
-        '## Authentication',
-        'Every request must include your bearer token in the `Authorization` header:',
-        '',
-        FENCE + 'bash',
-        'curl -X GET "https://api.nova-engine.com/v1/clusters" \\',
-        '     -H "Authorization: Bearer YOUR_API_SECRET_KEY" \\',
-        '     -H "Content-Type: application/json"',
-        FENCE,
-        '',
-        '### Status Codes Quick Reference',
-        '* `200 OK`: Request completed successfully.',
-        '* `400 Bad Request`: Payload validation error.',
-        '* `401 Unauthorized`: Missing or expired API key.',
-        '* `429 Too Many Requests`: Rate limit reached (Default: 600 req/min).',
-        '',
-        '<!-- page-break -->',
-        '',
-        '## Endpoints Overview',
-        '',
-        '### List Active Nodes',
-        '`GET /v1/nodes`',
-        '',
-        '**Parameters:**',
-        '* `region` *(string, optional)*: Filter by cloud region (e.g., `us-east-1`).',
-        '* `limit` *(integer, default 20)*: Total items returned.',
-        '',
-        '**JSON Response Example:**',
-        FENCE + 'json',
-        '{',
-        '  "status": "success",',
-        '  "data": [',
-        '    {',
-        '      "id": "node_99a8f",',
-        '      "region": "us-east-1",',
-        '      "status": "healthy",',
-        '      "uptime_seconds": 184920',
-        '    }',
-        '  ]',
+        '```typescript',
+        'interface MetricReport {',
+        '  timestamp: number;',
+        '  latencyMs: number;',
+        '  success: boolean;',
         '}',
-        FENCE
+        '',
+        'export function calculateP99(metrics: MetricReport[]): number {',
+        '  const sorted = metrics.map(m => m.latencyMs).sort((a, b) => a - b);',
+        '  const index = Math.floor(sorted.length * 0.99);',
+        '  return sorted[index] ?? 0;',
+        '}',
+        '```'
       ].join('\n'),
 
-      cheatsheet: [
-        '# Markdown & Mathematics Quick Reference',
+      table: [
+        '# Benchmark Performance Matrix',
         '',
-        '### Typography Styles',
-        '* *Italicized Text* (`*Italic*` or `_Italic_`)',
-        '* **Bold Text** (`**Bold**`)',
-        '* ***Bold & Italic*** (`***Bold & Italic***`)',
-        '* ~~Strikethrough~~ (`~~Strikethrough~~`)',
-        '',
-        '### Task List',
-        '- [x] Integrate Markdown parser',
-        '- [x] Configure KaTeX math formulas',
-        '- [x] Implement pagination & direct PDF export',
-        '- [ ] Add collaborative multi-cursor support',
-        '',
-        '### LaTeX Equations',
-        'Inline equation: $E = mc^2$ and Euler\'s identity $e^{i\\pi} + 1 = 0$.',
-        '',
-        'Display Block Formula:',
-        '$$ \\int_{-\\infty}^{+\\infty} e^{-x^2} dx = \\sqrt{\\pi} $$',
-        '',
-        '### Tables with Alignment',
-        '| Left-Aligned | Centered | Right-Aligned |',
-        '| :--- | :---: | ---: |',
-        '| Alpha | Standard | $12.50 |',
-        '| Beta | Medium | $104.99 |',
-        '| Gamma | Premium | $1,250.00 |'
+        '| Model Architecture | Parameters | MMLU Score | Latency |',
+        '| :--- | :--- | :---: | ---: |',
+        '| **Model Alpha** | 7.2B | 74.5% | 18 ms/tok |',
+        '| **Model Beta** | 13.0B | 81.2% | 34 ms/tok |',
+        '| **Model Delta** | 70.4B | 88.9% | 110 ms/tok |'
       ].join('\n')
     };
 
-    // DOM Elements
-    const markdownInput = document.getElementById('markdownInput');
-    const renderTarget = document.getElementById('renderTarget');
-    const previewRenderArea = document.getElementById('preview-render-area');
-    const themeSelect = document.getElementById('themeSelect');
-    const pageSize = document.getElementById('pageSize');
-    const marginSelect = document.getElementById('marginSelect');
-    const fontSize = document.getElementById('fontSize');
-    const templateSelect = document.getElementById('templateSelect');
-    const importBtn = document.getElementById('importBtn');
-    const fileInput = document.getElementById('fileInput');
-    const clearBtn = document.getElementById('clearBtn');
-    const printBtn = document.getElementById('printBtn');
-    const downloadPdfBtn = document.getElementById('downloadPdfBtn');
-    const downloadBtnText = document.getElementById('downloadBtnText');
-    const charCount = document.getElementById('charCount');
-    const wordCount = document.getElementById('wordCount');
-    const statusIndicator = document.getElementById('statusIndicator');
+    function renderPlayground() {
+      const text = playgroundInput.value;
+      playgroundCharCount.textContent = text.length + ' chars';
 
-    // Configure Marked
-    marked.setOptions({
-      breaks: true,
-      gfm: true
-    });
+      let html = marked.parse(text);
+      playgroundOutput.innerHTML = html;
 
-    // Custom Extension: Handle <!-- page-break --> comment safely and inject source-line anchors for 1:1 scroll sync
-    const renderer = {
-      html(token) {
-        const content = typeof token === 'string' ? token : (token && (token.text || token.raw || ''));
-        if (content.indexOf('<!-- page-break -->') !== -1 || content.indexOf('page-break-after: always') !== -1) {
-          return '<div class="page-break" style="page-break-after: always; height: 1px;"></div>';
-        }
-        return content;
-      },
-      heading(token) {
-        const text = typeof token === 'object' ? token.text : arguments[0];
-        const level = typeof token === 'object' ? token.depth : arguments[1];
-        const lineAttr = (typeof token === 'object' && token.sourceLine !== undefined) ? ' data-line="' + token.sourceLine + '"' : '';
-        return '<h' + level + lineAttr + '>' + text + '</h' + level + '>';
-      },
-      code(token) {
-        const text = typeof token === 'string' ? token : (token.text || '');
-        let rawLang = (token.lang || '').trim().toLowerCase();
-        
-        // Alias mapping for Angular, TS, SCSS, etc.
-        if (rawLang === 'ts' || rawLang === 'angular') rawLang = 'typescript';
-        if (rawLang === 'js') rawLang = 'javascript';
-        if (rawLang === 'sh' || rawLang === 'shell') rawLang = 'bash';
-
-        const displayLang = rawLang || 'code';
-        let highlightedCode = '';
-
-        if (rawLang && hljs.getLanguage(rawLang)) {
-          try {
-            highlightedCode = hljs.highlight(text, { language: rawLang }).value;
-          } catch (e) {
-            highlightedCode = text;
-          }
-        } else {
-          try {
-            highlightedCode = hljs.highlightAuto(text).value;
-          } catch (e) {
-            highlightedCode = text;
-          }
-        }
-
-        const lineAttr = (token && token.sourceLine !== undefined) ? ' data-line="' + token.sourceLine + '"' : '';
-
-        return '<div class="code-block-wrapper"' + lineAttr + '>' +
-          '<div class="code-block-header"><span>' + displayLang + '</span></div>' +
-          '<pre><code class="hljs language-' + rawLang + '">' + highlightedCode + '</code></pre>' +
-        '</div>';
-      }
-    };
-    marked.use({ renderer });
-
-    // Sanitize loose unescaped HTML tags in markdown body (e.g., <script>, <ng-container>, <style>, <app-*>)
-    function escapeInlineUnfencedTags(text) {
-      if (!text) return '';
-      return text.replace(/(?<!`)(<\/?(script|style|ng-container|template|app-[a-z0-9_-]+|[a-z0-9_-]+:[a-z0-9_-]+)(?:\s+[^>\n]*)?>)(?!`)/gi, function(match) {
-        return '`' + match + '`';
-      });
-    }
-
-    // Dedicated State Machine Preprocessor with Source Line Annotation
-    function autoFormatMarkdown(raw) {
-      if (!raw) return '';
-      const lines = raw.split(/\r?\n/);
-      const output = [];
-      let i = 0;
-
-      while (i < lines.length) {
-        let line = lines[i];
-        let trimmed = line.trim();
-        const sourceLineNumber = i;
-
-        // 1. Existing markdown fences: preserve as-is with sourceLine note
-        if (trimmed.startsWith('```')) {
-          output.push('<!-- line:' + sourceLineNumber + ' -->');
-          output.push(line);
-          i++;
-          while (i < lines.length) {
-            output.push(lines[i]);
-            if (lines[i].trim().startsWith('```')) {
-              i++;
-              break;
-            }
-            i++;
-          }
-          continue;
-        }
-
-        // 2. Clean ASCII equal and dash dividers (e.g. "====", "-----")
-        if (/^[=]{3,}$/.test(trimmed) || /^[-]{4,}$/.test(trimmed)) {
-          const lastOutput = output[output.length - 1] ? output[output.length - 1].trim() : '';
-          if (lastOutput !== '---') {
-            output.push('<!-- line:' + sourceLineNumber + ' -->\n---\n');
-          }
-          i++;
-          continue;
-        }
-
-        // 3. Document Title (all caps starting line without #)
-        if (output.length === 0 && !trimmed.startsWith('#') && /^[A-Z0-9\s()\-&,]{12,}$/.test(trimmed)) {
-          output.push('<!-- line:' + sourceLineNumber + ' -->\n# ' + trimmed + '\n');
-          i++;
-          continue;
-        }
-
-        // 4. Section headers: "PART 1: QUESTIONS..." -> "## PART 1:..."
-        if (/^(PART\s+\d+|SECTION\s+\d+|CHAPTER\s+\d+)/i.test(trimmed) && !trimmed.startsWith('#')) {
-          output.push('<!-- line:' + sourceLineNumber + ' -->\n## ' + trimmed + '\n');
-          i++;
-          continue;
-        }
-
-        // 5. Code Example blocks detection: captures EVERYTHING until next question or section header
-        if (/^Code(\s+Example)?\s*(\([a-zA-Z0-9_+-]+\))?:?$/i.test(trimmed)) {
-          let targetLang = 'typescript';
-          const langMatch = trimmed.match(/\(([a-zA-Z0-9_+-]+)\)/i);
-          if (langMatch && langMatch[1]) {
-            targetLang = langMatch[1].toLowerCase();
-          }
-
-          output.push('<!-- line:' + sourceLineNumber + ' -->\n**' + (trimmed.endsWith(':') ? trimmed : trimmed + ':') + '**\n');
-          i++;
-
-          // Collect lines for this cohesive code block
-          const codeLines = [];
-          const codeStartLine = i;
-          while (i < lines.length) {
-            const nextLine = lines[i];
-            const nextTrimmed = nextLine.trim();
-
-            if (/^\s*\d+[\.\)]\s+[A-Z]/.test(nextLine) ||
-                /^(PART\s+\d+|SECTION\s+\d+|CHAPTER\s+\d+)/i.test(nextTrimmed) ||
-                /^[=]{3,}$/.test(nextTrimmed) ||
-                /^[-]{4,}$/.test(nextTrimmed) ||
-                nextTrimmed.startsWith('```') ||
-                /^#+\s+/.test(nextTrimmed)) {
-              break;
-            }
-
-            codeLines.push(nextLine);
-            i++;
-          }
-
-          // Trim starting and trailing blank lines
-          while (codeLines.length && codeLines[0].trim() === '') codeLines.shift();
-          while (codeLines.length && codeLines[codeLines.length - 1].trim() === '') codeLines.pop();
-
-          if (codeLines.length > 0) {
-            const combinedContent = codeLines.join('\n');
-            if (/^<!DOCTYPE/i.test(combinedContent) || /<html/i.test(combinedContent) || /<body/i.test(combinedContent)) {
-              targetLang = 'html';
-            } else if (/\$primary-color|\.container\s*\{|\@mixin|\@include/i.test(combinedContent)) {
-              targetLang = 'scss';
-            } else if (/\@Component|\@Injectable|\@ViewChild|interface\s+[A-Z]|class\s+[A-Z]/i.test(combinedContent)) {
-              targetLang = 'typescript';
-            }
-
-            output.push('<!-- line:' + codeStartLine + ' -->');
-            output.push('```' + targetLang);
-            output.push(...codeLines);
-            output.push('```\n');
-          }
-          continue;
-        }
-
-        // 6. Direct Unfenced HTML Snippet Detection
-        if (/^<!DOCTYPE\s+html/i.test(trimmed) || /^<html[\s>]/i.test(trimmed)) {
-          const htmlLines = [line];
-          const htmlStartLine = i;
-          i++;
-          while (i < lines.length) {
-            const nextLine = lines[i];
-            const nextTrimmed = nextLine.trim();
-
-            htmlLines.push(nextLine);
-            i++;
-
-            if (/<\/html>/i.test(nextTrimmed)) break;
-            if (/^\s*\d+[\.\)]\s+/.test(nextLine) || /^[=]{3,}$/.test(nextTrimmed)) {
-              htmlLines.pop();
-              i--;
-              break;
-            }
-          }
-          output.push('<!-- line:' + htmlStartLine + ' -->');
-          output.push('```html');
-          output.push(...htmlLines);
-          output.push('```\n');
-          continue;
-        }
-
-        // 7. Normalize Question Numbers (e.g. "49. What happens...")
-        if (/^\s*(\d+[\.\)]\s+[A-Z].*)/.test(line) && !trimmed.startsWith('#')) {
-          const sanitizedHeading = escapeInlineUnfencedTags(trimmed);
-          output.push('<!-- line:' + sourceLineNumber + ' -->\n### ' + sanitizedHeading + '\n');
-          i++;
-          continue;
-        }
-
-        // 8. Normalize "Answer:" labels & escape lone HTML tags in answers
-        if (/^Answer:\s*/i.test(trimmed)) {
-          const restOfAnswer = trimmed.replace(/^Answer:\s*/i, '');
-          const sanitizedAnswer = escapeInlineUnfencedTags(restOfAnswer);
-          output.push('<!-- line:' + sourceLineNumber + ' -->\n**Answer:** ' + sanitizedAnswer);
-          i++;
-          continue;
-        }
-
-        // Sanitize loose tags in arbitrary text lines
-        output.push(escapeInlineUnfencedTags(line));
-        i++;
-      }
-
-      return output.join('\n');
-    }
-
-    // Scroll synchronization state
-    let isSyncing = false;
-
-    function getScrollAnchorMap() {
-      const anchors = [];
-      const renderedElements = renderTarget.querySelectorAll('[data-line]');
-      
-      renderedElements.forEach(el => {
-        const line = parseInt(el.getAttribute('data-line'), 10);
-        if (!isNaN(line)) {
-          anchors.push({ line, el });
-        }
-      });
-
-      anchors.sort((a, b) => a.line - b.line);
-      return anchors;
-    }
-
-    function syncPreviewToEditor() {
-      if (isSyncing) return;
-      isSyncing = true;
-
-      const editor = markdownInput;
-      const preview = document.getElementById('previewContainer');
-      const lines = editor.value.split('\n');
-      const totalLines = Math.max(lines.length, 1);
-
-      const lineHeight = editor.scrollHeight / totalLines;
-      const currentSourceLine = Math.floor(editor.scrollTop / lineHeight);
-
-      const anchors = getScrollAnchorMap();
-      if (anchors.length > 0) {
-        let matched = anchors[0];
-        for (let i = 0; i < anchors.length; i++) {
-          if (anchors[i].line <= currentSourceLine) {
-            matched = anchors[i];
-          } else {
-            break;
-          }
-        }
-
-        if (matched && matched.el) {
-          const containerRect = preview.getBoundingClientRect();
-          const elRect = matched.el.getBoundingClientRect();
-          const targetScrollTop = preview.scrollTop + (elRect.top - containerRect.top) - 20;
-          preview.scrollTop = Math.max(0, targetScrollTop);
-        }
-      } else {
-        const scrollRatio = editor.scrollTop / (editor.scrollHeight - editor.clientHeight || 1);
-        preview.scrollTop = scrollRatio * (preview.scrollHeight - preview.clientHeight || 1);
-      }
-
-      setTimeout(() => { isSyncing = false; }, 40);
-    }
-
-    function syncEditorToPreview() {
-      if (isSyncing) return;
-      isSyncing = true;
-
-      const editor = markdownInput;
-      const preview = document.getElementById('previewContainer');
-      const anchors = getScrollAnchorMap();
-
-      if (anchors.length > 0) {
-        const containerRect = preview.getBoundingClientRect();
-        let closest = anchors[0];
-
-        for (let i = 0; i < anchors.length; i++) {
-          const rect = anchors[i].el.getBoundingClientRect();
-          if (rect.top - containerRect.top <= 80) {
-            closest = anchors[i];
-          } else {
-            break;
-          }
-        }
-
-        if (closest) {
-          const lines = editor.value.split('\n');
-          const lineHeight = editor.scrollHeight / Math.max(lines.length, 1);
-          editor.scrollTop = closest.line * lineHeight;
-        }
-      } else {
-        const scrollRatio = preview.scrollTop / (preview.scrollHeight - preview.clientHeight || 1);
-        editor.scrollTop = scrollRatio * (editor.scrollHeight - editor.clientHeight || 1);
-      }
-
-      setTimeout(() => { isSyncing = false; }, 40);
-    }
-
-    // Render Function
-    function renderMarkdown(preserveScroll = true) {
-      const rawText = markdownInput.value;
-      const previewContainer = document.getElementById('previewContainer');
-      const prevScrollTop = previewContainer ? previewContainer.scrollTop : 0;
-
-      // Update counters
-      charCount.textContent = rawText.length.toLocaleString() + ' characters';
-      const words = rawText.trim() ? rawText.trim().split(/\s+/).length : 0;
-      wordCount.textContent = words.toLocaleString() + ' words';
-
-      // Pass through autoFormatMarkdown
-      const normalizedMarkdown = autoFormatMarkdown(rawText);
-
-      // Render Markdown to HTML
-      let parsedHtml = marked.parse(normalizedMarkdown);
-
-      // Convert line comments into HTML data-line attributes
-      parsedHtml = parsedHtml.replace(/<!--\s*line:(\d+)\s*-->\s*(<[a-z0-9]+)/gi, function(match, lineNum, tag) {
-        return tag + ' data-line="' + lineNum + '"';
-      });
-
-      renderTarget.innerHTML = parsedHtml;
-
-      // Render KaTeX Math ($...$ and $$...$$)
+      // Render KaTeX Math
       try {
         if (typeof renderMathInElement === 'function') {
-          renderMathInElement(renderTarget, {
+          renderMathInElement(playgroundOutput, {
             delimiters: [
               {left: '$$', right: '$$', display: true},
-              {left: '$', right: '$', display: false},
-              {left: '\\(', right: '\\)', display: false},
-              {left: '\\[', right: '\\]', display: true}
+              {left: '$', right: '$', display: false}
             ],
             throwOnError: false
           });
         }
-      } catch (err) {
-        console.warn("KaTeX rendering warning:", err);
-      }
-
-      if (preserveScroll && previewContainer) {
-        previewContainer.scrollTop = prevScrollTop;
-      }
-
-      try {
-        localStorage.setItem('md_pdf_studio_content', rawText);
       } catch (e) {}
 
-      statusIndicator.innerHTML = '<span class="w-2 h-2 rounded-full bg-emerald-500"></span> Synced';
-    }
-
-    // Debounced render
-    let timeoutId;
-    markdownInput.addEventListener('input', () => {
-      statusIndicator.innerHTML = '<span class="w-2 h-2 rounded-full bg-amber-500"></span> Typing...';
-      clearTimeout(timeoutId);
-      timeoutId = setTimeout(() => renderMarkdown(true), 120);
-    });
-
-    // Synchronized Scrolling listeners
-    const previewContainer = document.getElementById('previewContainer');
-    markdownInput.addEventListener('scroll', syncPreviewToEditor);
-    previewContainer.addEventListener('scroll', syncEditorToPreview);
-
-    // Style adjustments
-    function updateLayoutStyles() {
-      renderTarget.className = 'pdf-content ' + themeSelect.value;
-
-      const isMobile = window.innerWidth <= 640;
-      if (pageSize.value === 'a4') {
-        previewRenderArea.style.maxWidth = '210mm';
-        previewRenderArea.style.minHeight = '297mm';
-      } else {
-        previewRenderArea.style.maxWidth = '8.5in';
-        previewRenderArea.style.minHeight = '11in';
-      }
-
-      const m = marginSelect.value;
-      if (!isMobile) {
-        previewRenderArea.style.padding = m + 'mm';
-        previewRenderArea.style.fontSize = fontSize.value;
-      } else {
-        previewRenderArea.style.padding = '14px';
-        previewRenderArea.style.fontSize = '13.5px';
-      }
-    }
-
-    // Responsive Mobile/Tablet View Toggle Handlers
-    const tabEditor = document.getElementById('tabEditor');
-    const tabPreview = document.getElementById('tabPreview');
-    const tabSplit = document.getElementById('tabSplit');
-    const paneEditor = document.getElementById('paneEditor');
-    const panePreview = document.getElementById('panePreview');
-
-    function setMobileView(view) {
-      const activeClass = 'px-2.5 py-1 text-xs font-semibold rounded-md bg-white text-indigo-700 shadow-xs transition';
-      const inactiveClass = 'px-2.5 py-1 text-xs font-medium rounded-md text-slate-600 hover:text-slate-900 transition';
-
-      [tabEditor, tabPreview, tabSplit].forEach(tab => {
-        if (tab) tab.className = inactiveClass;
+      // Apply Highlight.js to code blocks
+      playgroundOutput.querySelectorAll('pre code').forEach((block) => {
+        hljs.highlightElement(block);
       });
-
-      if (view === 'editor') {
-        tabEditor.className = activeClass;
-        paneEditor.classList.remove('hidden');
-        paneEditor.classList.add('w-full', 'h-full');
-        paneEditor.classList.remove('lg:w-1/2');
-        panePreview.classList.add('hidden');
-        panePreview.classList.remove('flex');
-      } else if (view === 'preview') {
-        tabPreview.className = activeClass;
-        panePreview.classList.remove('hidden');
-        panePreview.classList.add('flex', 'w-full', 'h-full');
-        panePreview.classList.remove('lg:w-1/2');
-        paneEditor.classList.add('hidden');
-      } else if (view === 'split') {
-        if (tabSplit) tabSplit.className = activeClass;
-        paneEditor.classList.remove('hidden', 'w-full');
-        paneEditor.classList.add('w-1/2', 'h-full');
-        panePreview.classList.remove('hidden');
-        panePreview.classList.add('flex', 'w-1/2', 'h-full');
-      }
     }
 
-    if (tabEditor) tabEditor.addEventListener('click', () => setMobileView('editor'));
-    if (tabPreview) tabPreview.addEventListener('click', () => {
-      setMobileView('preview');
-      renderMarkdown(true);
+    // Set initial sample
+    playgroundInput.value = SAMPLES.math;
+    renderPlayground();
+
+    // Event listeners for playground input and presets
+    playgroundInput.addEventListener('input', renderPlayground);
+    document.getElementById('presetMath').addEventListener('click', () => {
+      playgroundInput.value = SAMPLES.math;
+      renderPlayground();
     });
-    if (tabSplit) tabSplit.addEventListener('click', () => setMobileView('split'));
-
-    // Handle screen resize across mobile, tablet, and desktop breakpoints
-    window.addEventListener('resize', () => {
-      if (window.innerWidth >= 1024) {
-        // Desktop breakpoint: restore split view
-        paneEditor.classList.remove('hidden', 'w-1/2');
-        paneEditor.classList.add('lg:w-1/2');
-        panePreview.classList.remove('hidden', 'w-full', 'w-1/2');
-        panePreview.classList.add('lg:flex', 'lg:w-1/2');
-      } else {
-        // Tablet / Mobile default if not already switched
-        if (!paneEditor.classList.contains('hidden') && !panePreview.classList.contains('hidden')) {
-          setMobileView('editor');
-        }
-      }
-      updateLayoutStyles();
+    document.getElementById('presetCode').addEventListener('click', () => {
+      playgroundInput.value = SAMPLES.code;
+      renderPlayground();
     });
-
-    themeSelect.addEventListener('change', updateLayoutStyles);
-    pageSize.addEventListener('change', updateLayoutStyles);
-    marginSelect.addEventListener('change', updateLayoutStyles);
-    fontSize.addEventListener('change', updateLayoutStyles);
-
-    // Template Selector
-    templateSelect.addEventListener('change', (e) => {
-      const selected = e.target.value;
-      if (TEMPLATES[selected]) {
-        markdownInput.value = TEMPLATES[selected];
-        renderMarkdown();
-      }
-    });
-
-    // File Import
-    importBtn.addEventListener('click', () => fileInput.click());
-    fileInput.addEventListener('change', (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        markdownInput.value = event.target.result;
-        renderMarkdown();
-      };
-      reader.readAsText(file);
-      fileInput.value = '';
-    });
-
-    // Clear
-    clearBtn.addEventListener('click', () => {
-      if (!markdownInput.value.trim()) return;
-      markdownInput.value = '';
-      renderMarkdown();
-      markdownInput.focus();
-    });
-
-    // Browser Print
-    printBtn.addEventListener('click', () => {
-      window.print();
-    });
-
-    // PDF Download using html2pdf.js
-    downloadPdfBtn.addEventListener('click', async () => {
-      const originalText = downloadBtnText.textContent;
-      downloadBtnText.textContent = "Generating...";
-      downloadPdfBtn.disabled = true;
-
-      const element = previewRenderArea;
-      const marginMm = parseInt(marginSelect.value, 10);
-      const isA4 = pageSize.value === 'a4';
-
-      const opt = {
-        margin: [marginMm, marginMm, marginMm, marginMm],
-        filename: 'document.pdf',
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true, letterRendering: true, logging: false },
-        jsPDF: { unit: 'mm', format: isA4 ? 'a4' : 'letter', orientation: 'portrait' },
-        pagebreak: { mode: ['css', 'legacy'] }
-      };
-
-      try {
-        const originalPadding = element.style.padding;
-        element.style.padding = '0px';
-
-        await html2pdf().set(opt).from(element).save();
-
-        element.style.padding = originalPadding;
-      } catch (err) {
-        console.error("PDF generation failed:", err);
-        window.print();
-      } finally {
-        downloadBtnText.textContent = originalText;
-        downloadPdfBtn.disabled = false;
-      }
-    });
-
-    // Editor formatting helpers
-    function insertSnippet(before, after = '', defaultText = '') {
-      const start = markdownInput.selectionStart;
-      const end = markdownInput.selectionEnd;
-      const selected = markdownInput.value.substring(start, end) || defaultText;
-      const replacement = before + selected + after;
-      
-      markdownInput.setRangeText(replacement, start, end, 'select');
-      markdownInput.focus();
-      renderMarkdown();
-    }
-
-    document.getElementById('btnBold').addEventListener('click', () => insertSnippet('**', '**', 'bold text'));
-    document.getElementById('btnItalic').addEventListener('click', () => insertSnippet('*', '*', 'italic text'));
-    document.getElementById('btnHeading').addEventListener('click', () => insertSnippet('## ', '', 'Heading'));
-    document.getElementById('btnLink').addEventListener('click', () => insertSnippet('[', '](https://example.com)', 'link text'));
-    document.getElementById('btnList').addEventListener('click', () => insertSnippet('- ', '', 'list item'));
-    document.getElementById('btnCode').addEventListener('click', () => insertSnippet('```typescript\n', '\n```', '// code block'));
-    document.getElementById('btnPageBreak').addEventListener('click', () => insertSnippet('\n<!-- page-break -->\n\n', '', ''));
-
-    // Apply Fixes to Source Button Event
-    document.getElementById('btnCleanFormat').addEventListener('click', () => {
-      const currentScrollTop = markdownInput.scrollTop;
-      const formatted = autoFormatMarkdown(markdownInput.value);
-      markdownInput.value = formatted;
-      renderMarkdown(true);
-      markdownInput.scrollTop = currentScrollTop;
-    });
-
-    // Zoom/Fit Helper
-    document.getElementById('zoomReset').addEventListener('click', () => {
-      document.getElementById('previewContainer').scrollTo({ top: 0, behavior: 'smooth' });
-      markdownInput.scrollTo({ top: 0, behavior: 'smooth' });
-    });
-
-    // Keyboard Shortcuts
-    markdownInput.addEventListener('keydown', (e) => {
-      const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
-      const modifier = isMac ? e.metaKey : e.ctrlKey;
-
-      if (modifier && e.key.toLowerCase() === 'b') {
-        e.preventDefault();
-        insertSnippet('**', '**', 'text');
-      } else if (modifier && e.key.toLowerCase() === 'i') {
-        e.preventDefault();
-        insertSnippet('*', '*', 'text');
-      } else if (modifier && e.key.toLowerCase() === 'p') {
-        e.preventDefault();
-        window.print();
-      } else if (e.key === 'Tab') {
-        e.preventDefault();
-        insertSnippet('  ', '', '');
-      }
-    });
-
-    // Initialize state
-    window.addEventListener('DOMContentLoaded', () => {
-      lucide.createIcons();
-
-      const saved = localStorage.getItem('md_pdf_studio_content');
-      if (saved && saved.trim()) {
-        markdownInput.value = saved;
-      } else {
-        markdownInput.value = TEMPLATES.report;
-      }
-
-      updateLayoutStyles();
-      renderMarkdown();
+    document.getElementById('presetTable').addEventListener('click', () => {
+      playgroundInput.value = SAMPLES.table;
+      renderPlayground();
     });
   </script>
 </body>

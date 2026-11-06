@@ -57,7 +57,7 @@ No build tools or backend servers are required!
    ```
 
 2. **Open in your browser:**
-   - Double-click `index.html` to open it directly in your browser.
+   - Open `index.html` for the landing page or `app.html` to jump directly into the Studio.
    - Or start a local lightweight web server:
      ```bash
      npx serve .
@@ -84,11 +84,12 @@ No build tools or backend servers are required!
 markdown-to-pdf-converter/
 ├── .github/
 │   └── workflows/
-│       └── deploy.yml              # GitHub Actions automated deployment to GitHub Pages
-├── index.html                      # Main single-page application (SPA)
-├── LICENSE                         # MIT License
-├── .gitignore                      # Git ignore rules
-└── README.md                       # Comprehensive documentation
+│       └── deploy.yml      # Automated GitHub Pages CI/CD workflow
+├── index.html              # Marketing landing page & interactive demo
+├── app.html                # Full Markdown to PDF Studio workspace
+├── README.md               # Comprehensive documentation
+├── LICENSE                 # MIT License
+└── .gitignore              # Git ignore rules
 ```
 
 ---
