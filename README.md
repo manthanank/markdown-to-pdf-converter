@@ -86,8 +86,6 @@ markdown-to-pdf-converter/
 │   └── workflows/
 │       └── deploy.yml              # GitHub Actions automated deployment to GitHub Pages
 ├── index.html                      # Main single-page application (SPA)
-├── markdown_to_pdf_converter.html  # Standalone app copy
-├── package.json                    # Project metadata & npm helper scripts
 ├── LICENSE                         # MIT License
 ├── .gitignore                      # Git ignore rules
 └── README.md                       # Comprehensive documentation
