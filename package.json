@@ -1,0 +1,28 @@
+{
+  "name": "markdown-to-pdf-converter",
+  "version": "1.0.0",
+  "description": "Modern client-side Markdown to PDF Studio with live preview, LaTeX math, syntax highlighting, and physical sheet simulation.",
+  "main": "index.html",
+  "scripts": {
+    "start": "npx serve .",
+    "dev": "npx serve ."
+  },
+  "keywords": [
+    "markdown",
+    "pdf",
+    "katex",
+    "latex",
+    "html2pdf",
+    "marked",
+    "highlightjs",
+    "studio",
+    "converter"
+  ],
+  "author": "Manthan Ankolekar <manthan.ank46@gmail.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/manthanank/markdown-to-pdf-converter.git"
+  },
+  "homepage": "https://manthanank.github.io/markdown-to-pdf-converter/"
+}
