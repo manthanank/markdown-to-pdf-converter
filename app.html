@@ -220,6 +220,22 @@
       }
     }
 
+    /* Screen styles for print-page-table wrapper */
+    .print-page-table {
+      width: 100%;
+      border-collapse: collapse;
+      border: none;
+    }
+    .print-page-header,
+    .print-page-footer {
+      display: none;
+    }
+    .print-body-cell {
+      padding: 0;
+      border: none;
+      vertical-align: top;
+    }
+
     /* Browser Print Optimization */
     @media print {
       @page {
@@ -275,11 +291,49 @@
         width: 100% !important;
         max-width: 100% !important;
         min-height: auto !important;
-        margin: 0 auto !important;
-        padding: 20mm !important;
-        box-sizing: border-box !important;
+        margin: 0 !important;
+        padding: 0 !important;
         box-shadow: none !important;
         border: none !important;
+      }
+
+      /* Multi-page repeated page margins via table-header-group & table-footer-group */
+      .print-page-table {
+        display: table !important;
+        width: 100% !important;
+        border-collapse: collapse !important;
+        border: none !important;
+      }
+
+      .print-page-header {
+        display: table-header-group !important;
+      }
+
+      .print-page-footer {
+        display: table-footer-group !important;
+      }
+
+      .print-header-cell {
+        height: 20mm !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        border: none !important;
+      }
+
+      .print-footer-cell {
+        height: 20mm !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        border: none !important;
+      }
+
+      .print-body-cell {
+        padding-left: 20mm !important;
+        padding-right: 20mm !important;
+        padding-top: 0 !important;
+        padding-bottom: 0 !important;
+        border: none !important;
+        vertical-align: top !important;
       }
 
       .page-break {
@@ -504,8 +558,26 @@
           class="paper-sheet bg-white min-h-[297mm] transition-all duration-150 relative"
           style="padding: 20mm; font-size: 15px;"
         >
-          <!-- Dynamic Markdown Render target -->
-          <div id="renderTarget" class="pdf-content theme-modern"></div>
+          <table class="print-page-table w-full border-none border-collapse">
+            <thead class="print-page-header">
+              <tr>
+                <td class="print-header-cell"></td>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="print-body-cell">
+                  <!-- Dynamic Markdown Render target -->
+                  <div id="renderTarget" class="pdf-content theme-modern"></div>
+                </td>
+              </tr>
+            </tbody>
+            <tfoot class="print-page-footer">
+              <tr>
+                <td class="print-footer-cell"></td>
+              </tr>
+            </tfoot>
+          </table>
         </article>
       </div>
     </section>
@@ -1286,6 +1358,7 @@
     });
 
     // Dynamic @page printer styling - Zero margin by default to completely suppress browser URL & timestamp
+    // Uses table thead/tfoot spacer to guarantee top and bottom margin on EVERY page of multi-page documents
     function updatePrintPageStyles() {
       let styleEl = document.getElementById('dynamic-print-css');
       if (!styleEl) {
@@ -1297,9 +1370,8 @@
       const isA4 = pageSize.value === 'a4';
       const marginMm = isNaN(parseInt(marginSelect.value, 10)) ? 20 : parseInt(marginSelect.value, 10);
       const pageFormat = isA4 ? 'A4 portrait' : 'letter portrait';
-      const printPadding = marginMm > 0 ? marginMm : 0;
+      const mVal = marginMm >= 0 ? marginMm : 20;
 
-      // Setting @page margin to 0 forces Chromium to automatically strip the URL header and date footer by default
       styleEl.textContent = `
         @media print {
           @page {
@@ -1312,9 +1384,18 @@
             background: #ffffff !important;
           }
           #preview-render-area {
-            padding: ${printPadding}mm !important;
-            box-sizing: border-box !important;
-            margin: 0 auto !important;
+            padding: 0 !important;
+            margin: 0 !important;
+          }
+          .print-header-cell {
+            height: ${mVal}mm !important;
+          }
+          .print-footer-cell {
+            height: ${mVal}mm !important;
+          }
+          .print-body-cell {
+            padding-left: ${mVal}mm !important;
+            padding-right: ${mVal}mm !important;
           }
         }
       `;
