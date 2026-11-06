@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <defs>
+    <linearGradient id="brandGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4f46e5" />
+      <stop offset="100%" stop-color="#7c3aed" />
+    </linearGradient>
+    <linearGradient id="badgeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ef4444" />
+      <stop offset="100%" stop-color="#dc2626" />
+    </linearGradient>
+  </defs>
+
+  <!-- App Rounded Icon Plate -->
+  <rect width="64" height="64" rx="16" fill="url(#brandGrad)" />
+
+  <!-- Sheet of Paper -->
+  <path d="M18 13 H36 L46 23 V50 H18 Z" fill="#ffffff" />
+  
+  <!-- Folded Corner -->
+  <path d="M36 13 V23 H46 Z" fill="#e0e7ff" />
+
+  <!-- Document Text Lines -->
+  <rect x="23" y="27" width="16" height="3" rx="1.5" fill="#6366f1" />
+  <rect x="23" y="33" width="12" height="3" rx="1.5" fill="#818cf8" />
+  <rect x="23" y="39" width="16" height="3" rx="1.5" fill="#a5b4fc" />
+
+  <!-- PDF Red Mini Badge -->
+  <rect x="32" y="41" width="23" height="14" rx="4" fill="url(#badgeGrad)" stroke="#ffffff" stroke-width="1.5" />
+  <text x="43.5" y="51.5" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="8" font-weight="900" fill="#ffffff" text-anchor="middle" letter-spacing="0.3">PDF</text>
+</svg>

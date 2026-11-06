@@ -87,6 +87,7 @@ markdown-to-pdf-converter/
 │       └── deploy.yml      # Automated GitHub Pages CI/CD workflow
 ├── index.html              # Marketing landing page & interactive demo
 ├── app.html                # Full Markdown to PDF Studio workspace
+├── favicon.svg             # Vector brand favicon (SVG)
 ├── README.md               # Comprehensive documentation
 ├── LICENSE                 # MIT License
 └── .gitignore              # Git ignore rules
