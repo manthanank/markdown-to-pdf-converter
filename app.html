@@ -223,7 +223,7 @@
     /* Browser Print Optimization */
     @media print {
       @page {
-        margin: 15mm;
+        margin: 0 !important;
         size: auto;
       }
 
@@ -275,8 +275,9 @@
         width: 100% !important;
         max-width: 100% !important;
         min-height: auto !important;
-        margin: 0 !important;
-        padding: 0 !important;
+        margin: 0 auto !important;
+        padding: 20mm !important;
+        box-sizing: border-box !important;
         box-shadow: none !important;
         border: none !important;
       }
@@ -546,19 +547,15 @@
               <strong class="underline">Save as PDF</strong>
             </p>
 
-            <!-- Guide to remove browser URL header & Date/Title footer -->
-            <div class="mt-2.5 bg-white border border-indigo-200/90 rounded-xl p-2.5 sm:p-3 text-xs text-slate-800 space-y-1.5 shadow-2xs">
-              <div class="flex items-center gap-1.5 font-bold text-slate-900 text-xs">
-                <i data-lucide="shield-check" class="w-4 h-4 text-emerald-600 shrink-0"></i>
-                <span>How to remove browser URL & date headers:</span>
+            <!-- Clean Export Badge -->
+            <div class="mt-2.5 bg-emerald-50/90 border border-emerald-200/90 rounded-xl p-2.5 sm:p-3 text-xs text-emerald-950 space-y-1 shadow-2xs">
+              <div class="flex items-center gap-1.5 font-bold text-emerald-900 text-xs">
+                <i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-600 shrink-0"></i>
+                <span>Clean PDF Enabled by Default</span>
               </div>
-              <div class="text-[11px] text-slate-600 leading-relaxed pl-5 space-y-0.5">
-                <div>1. In the print dialog, click <strong>More settings ▾</strong></div>
-                <div>2. <strong class="text-rose-600">Uncheck</strong> the box: <span class="inline-flex items-center gap-1 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-300 font-medium text-slate-900">☐ Headers and footers</span></div>
-                <div class="text-[10px] text-emerald-700 font-medium pt-0.5">
-                  ✓ Chrome remembers this setting for all future PDF saves!
-                </div>
-              </div>
+              <p class="text-[11px] text-emerald-800 leading-relaxed pl-5">
+                Browser URL (<code class="bg-emerald-100/80 px-1 py-0.5 rounded text-emerald-900 text-[10px]">https://...</code>) and date/time footers are <strong>automatically removed by default</strong> via zero-margin paged media.
+              </p>
             </div>
           </div>
           <button id="modalBtnVectorPrint" class="mt-3.5 w-full bg-indigo-600 hover:bg-indigo-700 active:scale-98 text-white font-bold py-2.5 px-4 rounded-xl shadow-md shadow-indigo-600/25 flex items-center justify-center gap-2 text-xs transition">
@@ -1288,7 +1285,7 @@
       markdownInput.focus();
     });
 
-    // Dynamic @page printer styling
+    // Dynamic @page printer styling - Zero margin by default to completely suppress browser URL & timestamp
     function updatePrintPageStyles() {
       let styleEl = document.getElementById('dynamic-print-css');
       if (!styleEl) {
@@ -1300,42 +1297,27 @@
       const isA4 = pageSize.value === 'a4';
       const marginMm = isNaN(parseInt(marginSelect.value, 10)) ? 20 : parseInt(marginSelect.value, 10);
       const pageFormat = isA4 ? 'A4 portrait' : 'letter portrait';
+      const printPadding = marginMm > 0 ? marginMm : 0;
 
-      if (marginMm === 0) {
-        // Zero-margin setting: forces Chromium to suppress default browser header URL and date footer
-        styleEl.textContent = `
-          @media print {
-            @page {
-              size: ${pageFormat} !important;
-              margin: 0 !important;
-            }
-            body {
-              margin: 0 !important;
-              padding: 0 !important;
-            }
-            #preview-render-area {
-              padding: 16mm !important;
-              box-sizing: border-box !important;
-            }
+      // Setting @page margin to 0 forces Chromium to automatically strip the URL header and date footer by default
+      styleEl.textContent = `
+        @media print {
+          @page {
+            size: ${pageFormat} !important;
+            margin: 0 !important; /* Strips browser URL and timestamp headers/footers by default */
           }
-        `;
-      } else {
-        styleEl.textContent = `
-          @media print {
-            @page {
-              size: ${pageFormat} !important;
-              margin: ${marginMm}mm !important;
-            }
-            body {
-              margin: 0 !important;
-              padding: 0 !important;
-            }
-            #preview-render-area {
-              padding: 0 !important;
-            }
+          html, body {
+            margin: 0 !important;
+            padding: 0 !important;
+            background: #ffffff !important;
           }
-        `;
-      }
+          #preview-render-area {
+            padding: ${printPadding}mm !important;
+            box-sizing: border-box !important;
+            margin: 0 auto !important;
+          }
+        }
+      `;
     }
 
     // High-Resolution Native Vector Print-to-PDF (Supports Unlimited Pages)
